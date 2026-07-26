@@ -106,10 +106,10 @@ fun SubidaRankingScreen(
     LaunchedEffect(Unit) { viewModel.cargar() }
 
     when (val actual = estado) {
-        is SubidaRankingState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer), contentAlignment = Alignment.Center) {
+        is SubidaRankingState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer).safeDrawingPadding(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondaryContainer)
         }
-        is SubidaRankingState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer).padding(24.dp), contentAlignment = Alignment.Center) {
+        is SubidaRankingState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.onSecondaryContainer, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(16.dp))
@@ -172,7 +172,8 @@ private fun ContenidoSubidaRanking(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { alpha = alfaFondo.value }
-            .background(MaterialTheme.colorScheme.secondaryContainer),
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .safeDrawingPadding(),
     ) {
         if (mostrarParticulas) {
             ConfettiOverlay(

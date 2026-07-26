@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -112,7 +113,8 @@ fun SplashScreen(onTerminado: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.radialGradient(colors = listOf(Petroleo, PetroleoOscuro))),
+            .background(Brush.radialGradient(colors = listOf(Petroleo, PetroleoOscuro)))
+            .safeDrawingPadding(),
         contentAlignment = Alignment.Center,
     ) {
         // Grilla sutil tipo "líneas de cancha" — 3% opacidad, igual que el mockup.

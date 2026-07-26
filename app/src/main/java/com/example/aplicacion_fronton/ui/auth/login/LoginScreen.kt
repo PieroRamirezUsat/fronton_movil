@@ -84,6 +84,7 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
+            .safeDrawingPadding()
             .verticalScroll(rememberScrollState()),
     ) {
         Row(

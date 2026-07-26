@@ -132,7 +132,7 @@ fun RegistroScreen(
     fun irAPaso(paso: Int) = scope.launch { pagerState.animateScrollToPage(paso) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).safeDrawingPadding()) {
         // Header — un botón de salida claro (no un ícono de perfil que sugiera
         // sesión iniciada, cuando en este flujo todavía no existe la cuenta).
         Row(
@@ -293,7 +293,7 @@ private fun PantallaExitoRegistro() {
         progresoCheck.animateTo(1f, tween(500, easing = LinearOutSlowInEasing))
     }
     Box(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary).safeDrawingPadding(),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

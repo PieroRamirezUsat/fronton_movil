@@ -72,10 +72,10 @@ fun VictoriaPartidoScreen(
     LaunchedEffect(versusId) { viewModel.cargar(versusId) }
 
     when (val actual = estado) {
-        is VictoriaPartidoState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) {
+        is VictoriaPartidoState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary).safeDrawingPadding(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = Color.White)
         }
-        is VictoriaPartidoState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary).padding(24.dp), contentAlignment = Alignment.Center) {
+        is VictoriaPartidoState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(actual.mensaje, color = Color.White, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(16.dp))
@@ -133,7 +133,8 @@ private fun ContenidoVictoriaPartido(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { alpha = alfaFondo.value }
-            .background(MaterialTheme.colorScheme.primary),
+            .background(MaterialTheme.colorScheme.primary)
+            .safeDrawingPadding(),
     ) {
         if (mostrarParticulas) {
             ConfettiOverlay(

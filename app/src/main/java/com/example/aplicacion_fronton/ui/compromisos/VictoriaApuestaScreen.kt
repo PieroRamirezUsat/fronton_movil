@@ -66,10 +66,10 @@ fun VictoriaApuestaScreen(
     LaunchedEffect(compromisoId) { viewModel.cargar(compromisoId) }
 
     when (val actual = estado) {
-        is VictoriaApuestaState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary), contentAlignment = Alignment.Center) {
+        is VictoriaApuestaState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary).safeDrawingPadding(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = Color.White)
         }
-        is VictoriaApuestaState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary).padding(24.dp), contentAlignment = Alignment.Center) {
+        is VictoriaApuestaState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(actual.mensaje, color = Color.White, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(16.dp))
@@ -122,7 +122,8 @@ private fun ContenidoVictoriaApuesta(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { alpha = alfaFondo.value }
-            .background(MaterialTheme.colorScheme.tertiary),
+            .background(MaterialTheme.colorScheme.tertiary)
+            .safeDrawingPadding(),
     ) {
         if (mostrarParticulas) {
             ConfettiOverlay(

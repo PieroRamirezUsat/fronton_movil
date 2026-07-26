@@ -87,10 +87,10 @@ fun DueloRetoScreen(
     LaunchedEffect(versusId) { viewModel.cargar(versusId) }
 
     when (val actual = estado) {
-        is DueloState.Cargando -> Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
+        is DueloState.Cargando -> Box(Modifier.fillMaxSize().background(Color.Black).safeDrawingPadding(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = Color.White)
         }
-        is DueloState.Error -> Box(Modifier.fillMaxSize().background(Color.Black).padding(24.dp), contentAlignment = Alignment.Center) {
+        is DueloState.Error -> Box(Modifier.fillMaxSize().background(Color.Black).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(actual.mensaje, color = Color.White, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(16.dp))
@@ -221,7 +221,7 @@ private fun ContenidoDuelo(duelo: DueloUi, onVerReto: () -> Unit, onContinuar: (
             visible = mostrarAcciones,
             enter = fadeIn(tween(300)) + expandVertically(tween(300)),
             exit = fadeOut(tween(150)) + shrinkVertically(tween(150)),
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp, start = 24.dp, end = 24.dp),
+            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 40.dp, start = 24.dp, end = 24.dp),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 BotonTactil(
