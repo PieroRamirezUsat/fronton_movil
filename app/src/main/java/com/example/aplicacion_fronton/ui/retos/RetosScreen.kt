@@ -92,6 +92,7 @@ fun RetosScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface)
+                        .statusBarsPadding()
                         .padding(horizontal = 20.dp, vertical = 12.dp),
                 ) {
                     Text(

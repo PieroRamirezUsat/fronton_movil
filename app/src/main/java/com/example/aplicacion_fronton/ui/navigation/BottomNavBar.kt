@@ -83,7 +83,7 @@ fun BottomNavBar(
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .padding(horizontal = 4.dp, vertical = 8.dp)
-                .navigationBarsPaddingCompat(),
+                .navigationBarsPadding(),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -189,7 +189,3 @@ private fun FabRetar(onClick: () -> Unit) {
         Icon(Icons.Filled.SportsTennis, contentDescription = "Retar", tint = MaterialTheme.colorScheme.onTertiary, modifier = Modifier.size(26.dp))
     }
 }
-
-// windowInsetsPadding requiere accompanist o material3 systemBars — se evita la
-// dependencia extra y se deja un padding fijo razonable para gestos/nav bar.
-private fun Modifier.navigationBarsPaddingCompat(): Modifier = this.padding(bottom = 8.dp)

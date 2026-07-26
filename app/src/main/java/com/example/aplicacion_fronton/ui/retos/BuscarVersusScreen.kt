@@ -115,6 +115,7 @@ fun BuscarVersusScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface)
+                        .statusBarsPadding()
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     BotonVolver(onClick = onVolver)

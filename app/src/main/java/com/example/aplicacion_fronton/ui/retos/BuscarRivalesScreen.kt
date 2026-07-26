@@ -79,6 +79,7 @@ fun BuscarRivalesScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface)
+                        .statusBarsPadding()
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     // Antes esta pantalla mostraba la barra inferior completa
