@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412529384640",
+    "project_id": "fronton-app-68e25",
+    "storage_bucket": "fronton-app-68e25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412529384640:android:9a18d7697fea57bd29e125",
+        "android_client_info": {
+          "package_name": "com.example.aplicacion_fronton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHf9h-zHVyUYzasRdJ2z6GDbJobzEDmsM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
