@@ -47,7 +47,6 @@ import com.example.aplicacion_fronton.ui.componentes.BotonReintentar
 import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
 import com.example.aplicacion_fronton.ui.componentes.SkeletonBox
 import com.example.aplicacion_fronton.ui.componentes.SkeletonFilaCard
-import com.example.aplicacion_fronton.ui.navigation.BottomNavBar
 import com.example.aplicacion_fronton.ui.navigation.ItemBarraInferior
 import com.example.aplicacion_fronton.ui.retos.PartidoHistorialUi
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -70,6 +69,7 @@ fun HomeScreen(
     onVersusSeleccionado: (Int) -> Unit = {},
     onRetar: () -> Unit = {},
     onSubidaRanking: (posicionAnterior: Int, posicionNueva: Int) -> Unit = { _, _ -> },
+    paddingInterno: PaddingValues,
     viewModel: HomeViewModel = viewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -106,18 +106,14 @@ fun HomeScreen(
         if (subida != null) onSubidaRanking(subida.first, subida.second)
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = { BottomNavBar(seleccionado = ItemBarraInferior.INICIO, onSeleccionar = onSeleccionarTab, onRetar = onRetar) },
-    ) { paddingInterno ->
-        when (val actual = estado) {
-            is HomeState.Cargando -> CargandoHome(paddingInterno)
-            is HomeState.Error -> ErrorHome(paddingInterno, actual.mensaje) { viewModel.cargarPerfil() }
-            is HomeState.Exito -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingInterno),
-            ) {
+    when (val actual = estado) {
+        is HomeState.Cargando -> CargandoHome(paddingInterno)
+        is HomeState.Error -> ErrorHome(paddingInterno, actual.mensaje) { viewModel.cargarPerfil() }
+        is HomeState.Exito -> Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingInterno),
+        ) {
                 // TopAppBar
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -243,7 +239,6 @@ fun HomeScreen(
             }
         }
     }
-}
 
 @Composable
 private fun TarjetaEstadistica(etiqueta: String, valor: String, modifier: Modifier = Modifier) {

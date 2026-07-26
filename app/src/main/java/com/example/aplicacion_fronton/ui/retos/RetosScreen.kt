@@ -51,7 +51,6 @@ import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.EstadoVacio
 import com.example.aplicacion_fronton.ui.componentes.SkeletonListaFilas
 import com.example.aplicacion_fronton.ui.componentes.rememberInteraccionPresionable
-import com.example.aplicacion_fronton.ui.navigation.BottomNavBar
 import com.example.aplicacion_fronton.ui.navigation.ItemBarraInferior
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
@@ -72,6 +71,7 @@ fun RetosScreen(
     onSeleccionarTab: (ItemBarraInferior) -> Unit,
     onVerDetalle: (Int) -> Unit = {},
     onRetar: () -> Unit = {},
+    paddingInterno: PaddingValues,
     viewModel: RetosViewModel = viewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -83,39 +83,34 @@ fun RetosScreen(
     // Detalle seguía apareciendo con su estado viejo al volver acá.
     LaunchedEffect(Unit) { viewModel.cargar() }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
-                ) {
-                    Text(
-                        "MIS RETOS",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
+    Column(modifier = Modifier.fillMaxSize().padding(paddingInterno)) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    "MIS RETOS",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                )
             }
-        },
-        bottomBar = { BottomNavBar(seleccionado = ItemBarraInferior.RETOS, onSeleccionar = onSeleccionarTab, onRetar = onRetar) },
-    ) { paddingInterno ->
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
+        }
+
         when (val actual = estado) {
-            is RetosState.Cargando -> SkeletonListaFilas(paddingInterno)
-            is RetosState.Error -> Box(Modifier.fillMaxSize().padding(paddingInterno).padding(24.dp), contentAlignment = Alignment.Center) {
+            is RetosState.Cargando -> SkeletonListaFilas(PaddingValues())
+            is RetosState.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                     BotonReintentar(onClick = { viewModel.cargar() })
                 }
             }
-            is RetosState.Exito -> Column(modifier = Modifier.fillMaxSize().padding(paddingInterno)) {
+            is RetosState.Exito -> Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier

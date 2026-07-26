@@ -10,10 +10,7 @@ sealed class Screen(val route: String) {
     data object ConfirmarReset : Screen("confirmar_reset/{correo}") {
         fun ruta(correo: String) = "confirmar_reset/${Uri.encode(correo)}"
     }
-    data object Home : Screen("home")
-    data object Ranking : Screen("ranking")
-    data object Retos : Screen("retos")
-    data object Perfil : Screen("perfil")
+    data object Tabs : Screen("tabs")
     data object PerfilJugador : Screen("perfil_jugador")
     data object CrearReto : Screen("crear_reto")
     data object DetalleVersus : Screen("detalle_versus/{versusId}") {
@@ -24,7 +21,6 @@ sealed class Screen(val route: String) {
     }
     data object HistorialVersus : Screen("historial_versus")
     data object BuscarRivales : Screen("buscar_rivales")
-    data object Notificaciones : Screen("notificaciones")
     data object Ajustes : Screen("ajustes")
     data object RegistrarCompromiso : Screen("registrar_compromiso/{versusId}") {
         fun ruta(versusId: Int) = "registrar_compromiso/$versusId"
@@ -42,7 +38,6 @@ sealed class Screen(val route: String) {
         fun ruta(compromisoId: Int) = "detalle_compromiso/$compromisoId"
     }
     data object ReporteApuestas : Screen("reporte_apuestas")
-    data object Apuestas : Screen("apuestas")
     data object BuscarVersus : Screen("buscar_versus")
     data object DueloReto : Screen("duelo_reto/{versusId}") {
         fun ruta(versusId: Int) = "duelo_reto/$versusId"

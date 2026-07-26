@@ -31,18 +31,13 @@ import com.example.aplicacion_fronton.ui.auth.login.OlvideContrasenaScreen
 import com.example.aplicacion_fronton.ui.auth.registro.RegistroScreen
 import com.example.aplicacion_fronton.ui.compromisos.AdjuntarComprobanteScreen
 import com.example.aplicacion_fronton.ui.compromisos.DetalleCompromisoScreen
-import com.example.aplicacion_fronton.ui.compromisos.HistorialCompromisosScreen
 import com.example.aplicacion_fronton.ui.compromisos.ReporteApuestasScreen
 import com.example.aplicacion_fronton.ui.compromisos.InvitacionCompromisoScreen
 import com.example.aplicacion_fronton.ui.compromisos.RegistrarCompromisoScreen
 import com.example.aplicacion_fronton.ui.compromisos.VerificarComprobanteScreen
 import com.example.aplicacion_fronton.ui.compromisos.VictoriaApuestaScreen
-import com.example.aplicacion_fronton.ui.home.HomeScreen
-import com.example.aplicacion_fronton.ui.notificaciones.NotificacionesScreen
 import com.example.aplicacion_fronton.ui.perfil.PerfilJugadorHolder
 import com.example.aplicacion_fronton.ui.perfil.PerfilJugadorScreen
-import com.example.aplicacion_fronton.ui.perfil.PerfilScreen
-import com.example.aplicacion_fronton.ui.ranking.RankingScreen
 import com.example.aplicacion_fronton.ui.ranking.SubidaRankingScreen
 import com.example.aplicacion_fronton.ui.retos.BuscarRivalesScreen
 import com.example.aplicacion_fronton.ui.retos.BuscarVersusScreen
@@ -52,7 +47,6 @@ import com.example.aplicacion_fronton.ui.retos.DueloRetoScreen
 import com.example.aplicacion_fronton.ui.retos.HistorialVersusScreen
 import com.example.aplicacion_fronton.ui.retos.ReportarMarcadorScreen
 import com.example.aplicacion_fronton.ui.retos.RetoHolder
-import com.example.aplicacion_fronton.ui.retos.RetosScreen
 import com.example.aplicacion_fronton.ui.retos.VictoriaPartidoScreen
 import com.example.aplicacion_fronton.ui.splash.SplashScreen
 import kotlinx.coroutines.launch
@@ -148,19 +142,14 @@ fun AppNavigation() {
                 onVolverALogin = { navController.popBackStack() },
             )
         }
-        composable(Screen.Home.route) {
-            HomeScreen(
-                onSeleccionarTab = { item -> irATab(navController, item) },
+        composable(Screen.Tabs.route) { backStackEntry ->
+            TabsShellScreen(
+                backStackEntry = backStackEntry,
                 onVersusSeleccionado = { versusId -> navController.navigate(Screen.DetalleVersus.ruta(versusId)) },
                 onRetar = irABuscarRivales,
                 onSubidaRanking = { posicionAnterior, posicionNueva ->
                     navController.navigate(Screen.SubidaRanking.ruta(posicionAnterior, posicionNueva))
                 },
-            )
-        }
-        composable(Screen.Ranking.route) {
-            RankingScreen(
-                onSeleccionarTab = { item -> irATab(navController, item) },
                 onJugadorSeleccionado = { entrada, modalidad ->
                     PerfilJugadorHolder.guardar(
                         PerfilJugadorHolder.Datos(
@@ -176,23 +165,21 @@ fun AppNavigation() {
                     )
                     navController.navigate(Screen.PerfilJugador.route)
                 },
-                onRetar = irABuscarRivales,
-            )
-        }
-        composable(Screen.Retos.route) {
-            RetosScreen(
-                onSeleccionarTab = { item -> irATab(navController, item) },
-                onVerDetalle = { versusId -> navController.navigate(Screen.DetalleVersus.ruta(versusId)) },
-                onRetar = irABuscarRivales,
-            )
-        }
-        composable(Screen.Perfil.route) {
-            PerfilScreen(
-                onSeleccionarTab = { item -> irATab(navController, item) },
+                onVerDetalleReto = { versusId -> navController.navigate(Screen.DetalleVersus.ruta(versusId)) },
                 onSesionCerrada = { volverALogin(navController) },
                 onVerHistorial = { navController.navigate(Screen.HistorialVersus.route) },
                 onAjustes = { navController.navigate(Screen.Ajustes.route) },
-                onRetar = irABuscarRivales,
+                onAbrirNotificacion = { notificacion ->
+                    abrirNotificacion(navController, notificacion.tipo, notificacion.versus_id, notificacion.compromiso_id)
+                },
+                onBuscarRivalesNotif = { navController.navigate(Screen.BuscarRivales.route) },
+                onVerInvitacion = { compromisoId -> navController.navigate(Screen.InvitacionCompromiso.ruta(compromisoId)) },
+                onAdjuntar = { compromisoId -> navController.navigate(Screen.AdjuntarComprobante.ruta(compromisoId)) },
+                onVerificar = { compromisoId -> navController.navigate(Screen.VerificarComprobante.ruta(compromisoId)) },
+                onVerDetalleCompromiso = { compromisoId -> navController.navigate(Screen.DetalleCompromiso.ruta(compromisoId)) },
+                onVerReporte = { navController.navigate(Screen.ReporteApuestas.route) },
+                onBuscarRivalesApuestas = { navController.navigate(Screen.BuscarRivales.route) },
+                onBuscarVersus = { navController.navigate(Screen.BuscarVersus.route) },
             )
         }
         composable(Screen.BuscarRivales.route) {
@@ -258,11 +245,7 @@ fun AppNavigation() {
             } else {
                 CrearRetoScreen(
                     rival = rival,
-                    onRetoEnviado = {
-                        navController.navigate(Screen.Retos.route) {
-                            popUpTo(Screen.Home.route) { inclusive = false }
-                        }
-                    },
+                    onRetoEnviado = { irATabDesdeOtroDestino(navController, ItemBarraInferior.RETOS) },
                     onVolver = { navController.popBackStack() },
                 )
             }
@@ -320,16 +303,6 @@ fun AppNavigation() {
                 onBuscarRivales = { navController.navigate(Screen.BuscarRivales.route) },
             )
         }
-        composable(Screen.Notificaciones.route) {
-            NotificacionesScreen(
-                onSeleccionarTab = { item -> irATab(navController, item) },
-                onAbrirNotificacion = { notificacion ->
-                    abrirNotificacion(navController, notificacion.tipo, notificacion.versus_id, notificacion.compromiso_id)
-                },
-                onBuscarRivales = { navController.navigate(Screen.BuscarRivales.route) },
-                onRetar = irABuscarRivales,
-            )
-        }
         composable(Screen.Ajustes.route) {
             AjustesScreen(
                 onVolver = { navController.popBackStack() },
@@ -385,19 +358,6 @@ fun AppNavigation() {
                 },
             )
         }
-        composable(Screen.Apuestas.route) {
-            HistorialCompromisosScreen(
-                onSeleccionarTab = { item -> irATab(navController, item) },
-                onVerInvitacion = { compromisoId -> navController.navigate(Screen.InvitacionCompromiso.ruta(compromisoId)) },
-                onAdjuntar = { compromisoId -> navController.navigate(Screen.AdjuntarComprobante.ruta(compromisoId)) },
-                onVerificar = { compromisoId -> navController.navigate(Screen.VerificarComprobante.ruta(compromisoId)) },
-                onVerDetalle = { compromisoId -> navController.navigate(Screen.DetalleCompromiso.ruta(compromisoId)) },
-                onVerReporte = { navController.navigate(Screen.ReporteApuestas.route) },
-                onBuscarRivales = { navController.navigate(Screen.BuscarRivales.route) },
-                onBuscarVersus = { navController.navigate(Screen.BuscarVersus.route) },
-                onRetar = irABuscarRivales,
-            )
-        }
         composable(
             Screen.DetalleCompromiso.route,
             arguments = listOf(navArgument("compromisoId") { type = NavType.IntType }),
@@ -427,19 +387,15 @@ fun AppNavigation() {
             DueloRetoScreen(
                 versusId = versusId,
                 onVerReto = { id ->
-                    // Primero se establece Home como base del stack (reemplaza
-                    // al duelo) y recién ahí se empuja Detalle encima — así
-                    // "volver" desde el detalle cae en Home, no de nuevo en la
-                    // animación que ya se vio.
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.DueloReto.route) { inclusive = true }
-                    }
+                    // Primero se vuelve al shell de pestañas (en Inicio) y
+                    // recién ahí se empuja Detalle encima — así "volver" desde
+                    // el detalle cae en Inicio, no de nuevo en la animación
+                    // que ya se vio.
+                    irATabDesdeOtroDestino(navController, ItemBarraInferior.INICIO)
                     navController.navigate(Screen.DetalleVersus.ruta(id))
                 },
                 onContinuar = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.DueloReto.route) { inclusive = true }
-                    }
+                    irATabDesdeOtroDestino(navController, ItemBarraInferior.INICIO)
                 },
             )
         }
@@ -459,11 +415,7 @@ fun AppNavigation() {
                 eloAntes = eloAntes,
                 eloDespues = eloDespues,
                 onVerDetalle = { navController.popBackStack() },
-                onIrAHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
-                },
+                onIrAHome = { irATabDesdeOtroDestino(navController, ItemBarraInferior.INICIO) },
             )
         }
         composable(
@@ -478,10 +430,7 @@ fun AppNavigation() {
             SubidaRankingScreen(
                 posicionAnterior = posicionAnterior,
                 posicionNueva = posicionNueva,
-                onVerRanking = {
-                    navController.popBackStack()
-                    irATab(navController, ItemBarraInferior.RANKING)
-                },
+                onVerRanking = { irATabDesdeOtroDestino(navController, ItemBarraInferior.RANKING) },
                 onIrAHome = { navController.popBackStack() },
             )
         }
@@ -497,11 +446,7 @@ fun AppNavigation() {
                         popUpTo(Screen.VictoriaApuesta.route) { inclusive = true }
                     }
                 },
-                onIrAHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Home.route) { inclusive = true }
-                    }
-                },
+                onIrAHome = { irATabDesdeOtroDestino(navController, ItemBarraInferior.INICIO) },
             )
         }
     }
@@ -539,7 +484,7 @@ private fun abrirNotificacion(navController: NavHostController, tipo: TipoNotifi
         // entre SALDADOS; ahora que existe el detalle, se navega directo ahí.
         TipoNotificacion.COMPROMISO_SALDADO ->
             compromisoId?.let { navController.navigate(Screen.DetalleCompromiso.ruta(it)) }
-                ?: irATab(navController, ItemBarraInferior.APUESTAS)
+                ?: irATabDesdeOtroDestino(navController, ItemBarraInferior.APUESTAS)
     }
 }
 
@@ -554,7 +499,7 @@ private suspend fun irAHomeLimpiandoBackStack(navController: NavHostController) 
  * `verificarDueloPendiente`). */
 private suspend fun destinoTrasIniciarSesion(): String {
     val dueloVersusId = verificarDueloPendiente()
-    return if (dueloVersusId != null) Screen.DueloReto.ruta(dueloVersusId) else Screen.Home.route
+    return if (dueloVersusId != null) Screen.DueloReto.ruta(dueloVersusId) else Screen.Tabs.route
 }
 
 /** Busca el `reto_recibido` no leído más reciente que todavía no se mostró
@@ -579,20 +524,13 @@ private fun volverALogin(navController: NavHostController) {
     }
 }
 
-/** Navegación entre pestañas del nav inferior — Home siempre queda como base
- * del stack de pestañas (no se apilan Ranking/Retos/Perfil una sobre otra al
- * cambiar varias veces). */
-private fun irATab(navController: NavHostController, item: ItemBarraInferior) {
-    val destino = when (item) {
-        ItemBarraInferior.INICIO -> Screen.Home.route
-        ItemBarraInferior.RANKING -> Screen.Ranking.route
-        ItemBarraInferior.RETOS -> Screen.Retos.route
-        ItemBarraInferior.APUESTAS -> Screen.Apuestas.route
-        ItemBarraInferior.NOTIFICACIONES -> Screen.Notificaciones.route
-        ItemBarraInferior.PERFIL -> Screen.Perfil.route
-    }
-    navController.navigate(destino) {
-        popUpTo(Screen.Home.route) { inclusive = false }
-        launchSingleTop = true
-    }
+/** Salta a una pestaña del shell desde una pantalla empujada ENCIMA de él —
+ * a diferencia del cambio de pestaña ya adentro del shell (que solo mueve el
+ * Pager, sin tocar el NavHost), esto primero vuelve a la MISMA entrada "tabs"
+ * del back stack — nunca se destruye, así que conserva ViewModels y la
+ * página en la que ya estaba — y recién ahí dispara el salto puntual vía su
+ * SavedStateHandle (ver CLAVE_TABS_PAGINA_OBJETIVO en TabsShellScreen.kt). */
+private fun irATabDesdeOtroDestino(navController: NavHostController, item: ItemBarraInferior) {
+    navController.getBackStackEntry(Screen.Tabs.route).savedStateHandle[CLAVE_TABS_PAGINA_OBJETIVO] = item.name
+    navController.popBackStack(Screen.Tabs.route, inclusive = false)
 }

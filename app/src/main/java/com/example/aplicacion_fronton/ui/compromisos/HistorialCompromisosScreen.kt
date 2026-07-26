@@ -50,7 +50,6 @@ import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.EstadoVacio
 import com.example.aplicacion_fronton.ui.componentes.PillFiltro
 import com.example.aplicacion_fronton.ui.componentes.SkeletonListaFilas
-import com.example.aplicacion_fronton.ui.navigation.BottomNavBar
 import com.example.aplicacion_fronton.ui.navigation.ItemBarraInferior
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 
@@ -65,6 +64,7 @@ fun HistorialCompromisosScreen(
     onBuscarRivales: () -> Unit,
     onBuscarVersus: () -> Unit,
     onRetar: () -> Unit = {},
+    paddingInterno: PaddingValues,
     viewModel: HistorialCompromisosViewModel = viewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -72,50 +72,46 @@ fun HistorialCompromisosScreen(
 
     LaunchedEffect(Unit) { viewModel.cargar() }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).statusBarsPadding()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+    Column(modifier = Modifier.fillMaxSize().padding(paddingInterno)) {
+        Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+            ) {
+                Text(
+                    "APUESTAS",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                )
+                // Botón lleno (mismo peso visual que el FAB de la barra
+                // inferior o el editar-foto de Perfil) en vez de un ícono
+                // plano — antes se perdía al lado del título, ahora se
+                // nota como una acción propia de la pantalla.
+                IconButton(
+                    onClick = onVerReporte,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.tertiary),
                 ) {
-                    Text(
-                        "APUESTAS",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    // Botón lleno (mismo peso visual que el FAB de la barra
-                    // inferior o el editar-foto de Perfil) en vez de un ícono
-                    // plano — antes se perdía al lado del título, ahora se
-                    // nota como una acción propia de la pantalla.
-                    IconButton(
-                        onClick = onVerReporte,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.tertiary),
-                    ) {
-                        Icon(Icons.Filled.QueryStats, contentDescription = "Ver reporte de apuestas", tint = MaterialTheme.colorScheme.onTertiary)
-                    }
+                    Icon(Icons.Filled.QueryStats, contentDescription = "Ver reporte de apuestas", tint = MaterialTheme.colorScheme.onTertiary)
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
             }
-        },
-        bottomBar = { BottomNavBar(seleccionado = ItemBarraInferior.APUESTAS, onSeleccionar = onSeleccionarTab, onRetar = onRetar) },
-    ) { padding ->
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
+        }
+
         when (val actual = estado) {
-            is HistorialCompromisosState.Cargando -> SkeletonListaFilas(padding)
-            is HistorialCompromisosState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
+            is HistorialCompromisosState.Cargando -> SkeletonListaFilas(PaddingValues())
+            is HistorialCompromisosState.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                     BotonReintentar(onClick = { viewModel.cargar() })
                 }
             }
-            is HistorialCompromisosState.Exito -> Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            is HistorialCompromisosState.Exito -> Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 16.dp),

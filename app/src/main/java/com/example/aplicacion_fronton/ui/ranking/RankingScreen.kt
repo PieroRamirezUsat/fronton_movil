@@ -46,7 +46,6 @@ import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
 import com.example.aplicacion_fronton.ui.componentes.SkeletonBox
 import com.example.aplicacion_fronton.ui.componentes.SkeletonCircle
 import com.example.aplicacion_fronton.ui.componentes.SkeletonLine
-import com.example.aplicacion_fronton.ui.navigation.BottomNavBar
 import com.example.aplicacion_fronton.ui.navigation.ItemBarraInferior
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
@@ -66,6 +65,7 @@ fun RankingScreen(
     onSeleccionarTab: (ItemBarraInferior) -> Unit,
     onJugadorSeleccionado: (RankingEntryDto, String) -> Unit = { _, _ -> },
     onRetar: () -> Unit = {},
+    paddingInterno: PaddingValues,
     viewModel: RankingViewModel = viewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -73,35 +73,34 @@ fun RankingScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
-                ) {
-                    Text(
-                        "RANKING NACIONAL",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
+    // Antes dependía solo de RankingViewModel.init{} — corría una sola vez por
+    // instancia. Con las 6 pestañas compartiendo un solo ViewModelStore (ver
+    // TabsShellScreen), el ViewModel ya no se recrea al revisitar la pestaña,
+    // así que sin esto el ranking quedaba desactualizado tras la primera vez.
+    LaunchedEffect(Unit) { viewModel.cargar() }
+
+    Column(modifier = Modifier.fillMaxSize().padding(paddingInterno)) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    "RANKING NACIONAL",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f),
+                )
             }
-        },
-        bottomBar = {
-            BottomNavBar(seleccionado = ItemBarraInferior.RANKING, onSeleccionar = onSeleccionarTab, onRetar = onRetar)
-        },
-    ) { paddingInterno ->
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
+        }
+
         when (val actual = estado) {
-            is RankingState.Cargando -> SkeletonRanking(paddingInterno)
-            is RankingState.Error -> Box(Modifier.fillMaxSize().padding(paddingInterno).padding(24.dp), contentAlignment = Alignment.Center) {
+            is RankingState.Cargando -> SkeletonRanking(PaddingValues())
+            is RankingState.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                     BotonReintentar(onClick = { viewModel.cargar() })
@@ -129,7 +128,7 @@ fun RankingScreen(
                 var visible by remember { mutableStateOf(false) }
                 LaunchedEffect(Unit) { visible = true }
 
-                Box(modifier = Modifier.fillMaxSize().padding(paddingInterno)) {
+                Box(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                         item {
                           SeccionEnCascada(visible, retraso = 0) {

@@ -66,12 +66,16 @@ fun BottomNavBar(
     // es a propósito el conteo total sin filtrar (mismo dato que antes vivía
     // en la campana de Home, ahora acá).
     var novedadesApuestas by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) {
+    // Antes de que la barra fuera una instancia única y persistente, esto se
+    // recreaba (y re-pedía) cada vez que se entraba a una pestaña. Ahora se
+    // vuelve a a pedir en cada cambio de página (rekey por `seleccionado`)
+    // para no perder ese refresco.
+    LaunchedEffect(seleccionado) {
         val resultado = safeApiCall { RetrofitClient.notificacionesService.contarNoLeidas(soloApuestas = true) }
         novedadesApuestas = (resultado as? ApiResult.Exito)?.datos?.conteo ?: 0
     }
     var novedadesTotales by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(seleccionado) {
         val resultado = safeApiCall { RetrofitClient.notificacionesService.contarNoLeidas() }
         novedadesTotales = (resultado as? ApiResult.Exito)?.datos?.conteo ?: 0
     }

@@ -43,7 +43,6 @@ import com.example.aplicacion_fronton.model.dto.TipoNotificacion
 import com.example.aplicacion_fronton.ui.componentes.EstadoVacio
 import com.example.aplicacion_fronton.ui.componentes.PillFiltro
 import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
-import com.example.aplicacion_fronton.ui.navigation.BottomNavBar
 import com.example.aplicacion_fronton.ui.navigation.ItemBarraInferior
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import java.util.Calendar
@@ -99,6 +98,7 @@ fun NotificacionesScreen(
     onAbrirNotificacion: (NotificacionDto) -> Unit,
     onBuscarRivales: () -> Unit = {},
     onRetar: () -> Unit = {},
+    paddingInterno: PaddingValues,
     viewModel: NotificacionesViewModel = viewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -120,10 +120,8 @@ fun NotificacionesScreen(
     }
     val pestañaPendientes = mostrandoPendientes ?: true
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).statusBarsPadding()) {
+    Column(modifier = Modifier.fillMaxSize().padding(paddingInterno)) {
+        Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -157,15 +155,13 @@ fun NotificacionesScreen(
                     }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
-            }
-        },
-        bottomBar = { BottomNavBar(seleccionado = ItemBarraInferior.NOTIFICACIONES, onSeleccionar = onSeleccionarTab, onRetar = onRetar) },
-    ) { padding ->
+        }
+
         when (val actual = estado) {
-            is NotificacionesState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            is NotificacionesState.Cargando -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-            is NotificacionesState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
+            is NotificacionesState.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
             }
             is NotificacionesState.Exito -> {
@@ -177,7 +173,6 @@ fun NotificacionesScreen(
                         icono = Icons.Filled.EventBusy,
                         titulo = "No tienes notificaciones todavía",
                         subtitulo = "Los avisos de tus retos y resultados aparecerán aquí.",
-                        modifier = Modifier.padding(padding),
                         textoBoton = "Buscar rival",
                         onBoton = onBuscarRivales,
                     )
@@ -187,14 +182,13 @@ fun NotificacionesScreen(
                             icono = Icons.Filled.CheckCircle,
                             titulo = "Nada pendiente por ahora",
                             subtitulo = "Cuando un reto o una apuesta necesite tu respuesta, aparecerá aquí.",
-                            modifier = Modifier.padding(padding),
                         )
                     } else {
                         var visible by remember { mutableStateOf(false) }
                         LaunchedEffect(Unit) { visible = true }
                         SeccionEnCascada(visible, retraso = 0) {
                             LazyColumn(
-                                modifier = Modifier.fillMaxSize().padding(padding),
+                                modifier = Modifier.fillMaxSize(),
                                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
@@ -223,7 +217,7 @@ fun NotificacionesScreen(
 
                   SeccionEnCascada(visible, retraso = 0) {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(padding),
+                        modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {

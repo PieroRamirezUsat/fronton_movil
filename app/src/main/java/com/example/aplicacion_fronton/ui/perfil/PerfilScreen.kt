@@ -55,7 +55,6 @@ import com.example.aplicacion_fronton.ui.componentes.SkeletonBox
 import com.example.aplicacion_fronton.ui.componentes.SkeletonCircle
 import com.example.aplicacion_fronton.ui.componentes.SkeletonFilaCard
 import com.example.aplicacion_fronton.ui.componentes.SkeletonLine
-import com.example.aplicacion_fronton.ui.navigation.BottomNavBar
 import com.example.aplicacion_fronton.ui.navigation.ItemBarraInferior
 import com.example.aplicacion_fronton.ui.retos.PartidoHistorialUi
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -76,6 +75,7 @@ fun PerfilScreen(
     onVerHistorial: () -> Unit = {},
     onAjustes: () -> Unit = {},
     onRetar: () -> Unit = {},
+    paddingInterno: PaddingValues,
     viewModel: PerfilViewModel = viewModel(),
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
@@ -101,11 +101,7 @@ fun PerfilScreen(
     ) { uri -> if (uri != null) viewModel.subirFoto(uriAParteMultipart(contexto, uri)) }
     var selectorParejaAbierto by remember { mutableStateOf(false) }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = { BottomNavBar(seleccionado = ItemBarraInferior.PERFIL, onSeleccionar = onSeleccionarTab, onRetar = onRetar) },
-    ) { paddingInterno ->
-        when (val actual = estado) {
+    when (val actual = estado) {
             is PerfilState.Cargando -> SkeletonPerfil(paddingInterno)
             is PerfilState.Error -> Box(Modifier.fillMaxSize().padding(paddingInterno).padding(24.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -239,7 +235,6 @@ fun PerfilScreen(
             }
             }
         }
-    }
 }
 
 /** Mismo lenguaje visual que `SelectorCompañero` en Crear Reto — círculo con
