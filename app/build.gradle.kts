@@ -50,10 +50,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // TODO: reemplazar por la URL real una vez creado el servicio en Railway
-            // (ver checklist de despliegue) — hasta entonces un build release no
-            // tiene backend real al que apuntar.
-            buildConfigField("String", "BASE_URL", "\"https://TODO-reemplazar.up.railway.app/\"")
+            buildConfigField("String", "BASE_URL", "\"https://fronton-api-production.up.railway.app/\"")
         }
     }
     compileOptions {
