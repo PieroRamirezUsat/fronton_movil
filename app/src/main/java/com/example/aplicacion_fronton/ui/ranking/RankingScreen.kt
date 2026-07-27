@@ -164,6 +164,12 @@ fun RankingScreen(
                                         viewModel.cambiarFiltro(modalidad = "dobles")
                                     }
                                 }
+                                Spacer(Modifier.height(8.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    ChipFiltro("TODOS", viewModel.genero == null) { viewModel.cambiarFiltro(genero = null) }
+                                    ChipFiltro("HOMBRES", viewModel.genero == "masculino") { viewModel.cambiarFiltro(genero = "masculino") }
+                                    ChipFiltro("MUJERES", viewModel.genero == "femenino") { viewModel.cambiarFiltro(genero = "femenino") }
+                                }
                             }
                           }
                         }
@@ -375,12 +381,40 @@ private fun FilaRanking(entrada: RankingEntryDto, esYo: Boolean, onClick: () -> 
                 maxLines = 1,
             )
         }
+        InsigniaDivision(entrada.division)
+        Spacer(Modifier.width(8.dp))
         Text(
             entrada.elo.toString(),
             style = NumericTextStyle.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
             color = if (esYo) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
         )
     }
+}
+
+/** División estilo LoL (hierro/bronce/plata/oro/platino) — calculada por el
+ * backend a partir del elo, mismo formato de mapeo enum-ish que
+ * `iconoYColorTipo` en NotificacionesScreen. */
+private fun colorDivision(division: String): Color = when (division) {
+    "hierro" -> Color(0xFF6B7280)
+    "bronce" -> Color(0xFFC97B4A)
+    "plata" -> Color(0xFFB0B7C3)
+    "oro" -> Color(0xFFFFD54A)
+    "platino" -> Color(0xFF4FD8D8)
+    else -> Color(0xFF6B7280)
+}
+
+@Composable
+private fun InsigniaDivision(division: String) {
+    val color = colorDivision(division)
+    Text(
+        division.uppercase(),
+        style = CapsLabelTextStyle.copy(fontSize = 9.sp),
+        color = color,
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .border(1.dp, color, RoundedCornerShape(50))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    )
 }
 
 @Composable

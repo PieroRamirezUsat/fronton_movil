@@ -35,4 +35,10 @@ interface VersusService {
         @Path("id") versusId: Int,
         @Body datos: ReportarResultadoDto
     ): Response<ResultadoRespuestaDto>
+
+    @POST("versus/{id}/solicitar-cancelacion")
+    suspend fun solicitarCancelacion(@Path("id") versusId: Int): Response<VersusDto>
+
+    @POST("versus/{id}/rechazar-cancelacion")
+    suspend fun rechazarCancelacion(@Path("id") versusId: Int): Response<VersusDto>
 }

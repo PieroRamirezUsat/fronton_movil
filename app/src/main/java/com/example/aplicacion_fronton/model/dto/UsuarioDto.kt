@@ -20,6 +20,11 @@ enum class ManoHabil {
     @SerializedName("zurdo") ZURDO,
 }
 
+enum class Genero {
+    @SerializedName("masculino") MASCULINO,
+    @SerializedName("femenino") FEMENINO,
+}
+
 data class UsuarioDto(
     val id: Int,
     val nombre: String,
@@ -28,6 +33,9 @@ data class UsuarioDto(
     val club: String?,
     val categoria_edad: CategoriaEdad,
     val mano_habil: ManoHabil,
+    // Nullable — cuentas creadas antes de que este campo existiera todavía
+    // no lo tienen (se les pide completarlo, ver CompletarPerfilScreen).
+    val genero: Genero?,
     val elo_individual: Int,
     val elo_dobles: Int,
     val fichas_cancha: Int,
@@ -48,11 +56,16 @@ data class ActualizarPerfilRequestDto(
     val categoria_edad: CategoriaEdad
 )
 
+data class ActualizarGeneroRequestDto(
+    val genero: Genero
+)
+
 data class UsuarioCreateDto(
     val nombre: String,
     val correo: String,
     val password: String,
     val club: String?,
     val categoria_edad: CategoriaEdad,
-    val mano_habil: ManoHabil
+    val mano_habil: ManoHabil,
+    val genero: Genero
 )

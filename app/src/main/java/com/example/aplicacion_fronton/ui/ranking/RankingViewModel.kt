@@ -25,14 +25,21 @@ class RankingViewModel : ViewModel() {
         private set
     var categoriaEdad: String? = null
         private set
+    var genero: String? = null
+        private set
 
     init {
         cargar()
     }
 
-    fun cambiarFiltro(modalidad: String = this.modalidad, categoriaEdad: String? = this.categoriaEdad) {
+    fun cambiarFiltro(
+        modalidad: String = this.modalidad,
+        categoriaEdad: String? = this.categoriaEdad,
+        genero: String? = this.genero,
+    ) {
         this.modalidad = modalidad
         this.categoriaEdad = categoriaEdad
+        this.genero = genero
         cargar()
     }
 
@@ -44,7 +51,7 @@ class RankingViewModel : ViewModel() {
             val miId = (perfil as? ApiResult.Exito)?.datos?.id ?: -1
 
             val resultado = safeApiCall {
-                RetrofitClient.rankingService.obtenerRanking(modalidad, categoriaEdad)
+                RetrofitClient.rankingService.obtenerRanking(modalidad, categoriaEdad, genero)
             }
             _estado.value = when (resultado) {
                 is ApiResult.Exito -> RankingState.Exito(resultado.datos, miId)

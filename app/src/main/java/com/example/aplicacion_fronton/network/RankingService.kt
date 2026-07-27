@@ -9,6 +9,7 @@ interface RankingService {
     @GET("ranking")
     suspend fun obtenerRanking(
         @Query("modalidad") modalidad: String = "individual",
-        @Query("categoria_edad") categoriaEdad: String? = null
+        @Query("categoria_edad") categoriaEdad: String? = null,
+        @Query("genero") genero: String? = null
     ): Response<List<RankingEntryDto>>
 }

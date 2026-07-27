@@ -3,6 +3,7 @@ package com.example.aplicacion_fronton.ui.auth.registro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplicacion_fronton.model.dto.CategoriaEdad
+import com.example.aplicacion_fronton.model.dto.Genero
 import com.example.aplicacion_fronton.model.dto.LoginRequestDto
 import com.example.aplicacion_fronton.model.dto.ManoHabil
 import com.example.aplicacion_fronton.model.dto.UsuarioCreateDto
@@ -36,6 +37,7 @@ class RegistroViewModel : ViewModel() {
         club: String,
         categoriaEdad: CategoriaEdad,
         manoHabil: ManoHabil,
+        genero: Genero,
         fotoParte: MultipartBody.Part? = null,
     ) {
         if (nombre.isBlank() || correo.isBlank() || password.length < 8) {
@@ -52,6 +54,7 @@ class RegistroViewModel : ViewModel() {
                 club = if (jugadorLibre) null else club.trim().ifBlank { null },
                 categoria_edad = categoriaEdad,
                 mano_habil = manoHabil,
+                genero = genero,
             )
             val registro = safeApiCall { RetrofitClient.authService.registrar(datos) }
             if (registro is ApiResult.Error) {
@@ -89,6 +92,7 @@ class RegistroViewModel : ViewModel() {
         club: String,
         categoriaEdad: CategoriaEdad,
         manoHabil: ManoHabil,
+        genero: Genero,
     ) {
         viewModelScope.launch {
             _estado.value = RegistroState.Cargando
@@ -97,6 +101,7 @@ class RegistroViewModel : ViewModel() {
                 club = if (jugadorLibre) null else club.trim().ifBlank { null },
                 categoria_edad = categoriaEdad,
                 mano_habil = manoHabil,
+                genero = genero,
             )
             val resultado = safeApiCall { RetrofitClient.authService.googleCompletar(datos) }
             _estado.value = when (resultado) {

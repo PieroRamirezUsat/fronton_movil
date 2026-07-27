@@ -1,5 +1,6 @@
 package com.example.aplicacion_fronton.network
 
+import com.example.aplicacion_fronton.model.dto.ActualizarGeneroRequestDto
 import com.example.aplicacion_fronton.model.dto.ActualizarPerfilRequestDto
 import com.example.aplicacion_fronton.model.dto.CompromisoHistorialItemDto
 import com.example.aplicacion_fronton.model.dto.CumplimientoDto
@@ -41,6 +42,11 @@ interface UsuariosService {
 
     @PATCH("usuarios/me")
     suspend fun actualizarPerfil(@Body datos: ActualizarPerfilRequestDto): Response<UsuarioDto>
+
+    // Usado tanto en el onboarding bloqueante (cuentas creadas antes de que
+    // este campo existiera) como para editarlo después desde Ajustes.
+    @PATCH("usuarios/me/genero")
+    suspend fun actualizarGenero(@Body datos: ActualizarGeneroRequestDto): Response<UsuarioDto>
 
     @DELETE("usuarios/me")
     suspend fun eliminarCuenta(): Response<Map<String, Boolean>>

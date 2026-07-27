@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.model.dto.CategoriaEdad
+import com.example.aplicacion_fronton.model.dto.Genero
 import com.example.aplicacion_fronton.model.dto.ManoHabil
 import com.example.aplicacion_fronton.model.dto.UsuarioDto
 import com.example.aplicacion_fronton.network.GooglePendingAuth
@@ -110,6 +111,7 @@ fun RegistroScreen(
     var club by remember { mutableStateOf("") }
     var categoriaEdad by remember { mutableStateOf(CategoriaEdad.LIBRE) }
     var manoHabil by remember { mutableStateOf(ManoHabil.DIESTRO) }
+    var genero by remember { mutableStateOf(Genero.MASCULINO) }
     var errorPaso1 by remember { mutableStateOf<String?>(null) }
 
     val selectorFoto = rememberLauncherForActivityResult(
@@ -245,15 +247,17 @@ fun RegistroScreen(
                         onCategoriaChange = { categoriaEdad = it },
                         manoHabil = manoHabil,
                         onManoChange = { manoHabil = it },
+                        genero = genero,
+                        onGeneroChange = { genero = it },
                         cargando = estado is RegistroState.Cargando,
                         error = (estado as? RegistroState.Error)?.mensaje,
                         onAtras = { irAPaso(2) },
                         onCrearPerfil = {
                             if (datosGoogle != null) {
-                                viewModel.registrarConGoogle(datosGoogle.idToken, jugadorLibre, club, categoriaEdad, manoHabil)
+                                viewModel.registrarConGoogle(datosGoogle.idToken, jugadorLibre, club, categoriaEdad, manoHabil, genero)
                             } else {
                                 val fotoParte = fotoUri?.let { uriAParteMultipart(contexto, it) }
-                                viewModel.registrar(nombre, correo, password, jugadorLibre, club, categoriaEdad, manoHabil, fotoParte)
+                                viewModel.registrar(nombre, correo, password, jugadorLibre, club, categoriaEdad, manoHabil, genero, fotoParte)
                             }
                         },
                     )
@@ -578,6 +582,8 @@ private fun PasoDetalles(
     onCategoriaChange: (CategoriaEdad) -> Unit,
     manoHabil: ManoHabil,
     onManoChange: (ManoHabil) -> Unit,
+    genero: Genero,
+    onGeneroChange: (Genero) -> Unit,
     cargando: Boolean,
     error: String?,
     onAtras: () -> Unit,
@@ -617,6 +623,34 @@ private fun PasoDetalles(
                     .clip(RoundedCornerShape(6.dp))
                     .background(if (activo) MaterialTheme.colorScheme.surfaceBright else Color.Transparent)
                     .clickable { onManoChange(valor) }
+                    .padding(vertical = 14.dp),
+            )
+        }
+    }
+
+    Spacer(Modifier.height(24.dp))
+    Text("GÉNERO", style = CapsLabelTextStyle, color = MaterialTheme.colorScheme.primary)
+    Spacer(Modifier.height(8.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(2.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
+            .padding(4.dp),
+    ) {
+        listOf(Genero.MASCULINO to "Masculino", Genero.FEMENINO to "Femenino").forEach { (valor, etiqueta) ->
+            val activo = genero == valor
+            Text(
+                etiqueta,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineSmall,
+                color = if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (activo) MaterialTheme.colorScheme.surfaceBright else Color.Transparent)
+                    .clickable { onGeneroChange(valor) }
                     .padding(vertical = 14.dp),
             )
         }

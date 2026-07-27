@@ -39,8 +39,10 @@ import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.model.dto.EstadoVersus
 import com.example.aplicacion_fronton.model.dto.Modalidad
 import com.example.aplicacion_fronton.model.dto.RankingEntryDto
+import com.example.aplicacion_fronton.model.dto.ReportarResultadoDto
 import com.example.aplicacion_fronton.model.dto.VersusDto
 import com.example.aplicacion_fronton.model.dto.yaComenzoElVersus
+import com.example.aplicacion_fronton.model.dto.yaPasoUnaHoraDesde
 import com.example.aplicacion_fronton.network.ApiResult
 import com.example.aplicacion_fronton.network.RetrofitClient
 import com.example.aplicacion_fronton.network.safeApiCall
@@ -83,6 +85,10 @@ fun DetalleVersusScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var respondiendo by remember { mutableStateOf(false) }
     var errorRespuesta by remember { mutableStateOf<String?>(null) }
+    var accionCancelacion by remember { mutableStateOf(false) }
+    var errorCancelacion by remember { mutableStateOf<String?>(null) }
+    var declarandoInasistencia by remember { mutableStateOf(false) }
+    var errorInasistencia by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     fun responder(aceptar: Boolean) {
@@ -99,6 +105,53 @@ fun DetalleVersusScreen(
                 is ApiResult.Error -> errorRespuesta = resultado.mensaje
             }
             respondiendo = false
+        }
+    }
+
+    fun solicitarCancelacion() {
+        scope.launch {
+            accionCancelacion = true
+            errorCancelacion = null
+            val resultado = safeApiCall { RetrofitClient.versusService.solicitarCancelacion(versusId) }
+            when (resultado) {
+                is ApiResult.Exito -> versus = resultado.datos
+                is ApiResult.Error -> errorCancelacion = resultado.mensaje
+            }
+            accionCancelacion = false
+        }
+    }
+
+    fun rechazarCancelacion() {
+        scope.launch {
+            accionCancelacion = true
+            errorCancelacion = null
+            val resultado = safeApiCall { RetrofitClient.versusService.rechazarCancelacion(versusId) }
+            when (resultado) {
+                is ApiResult.Exito -> versus = resultado.datos
+                is ApiResult.Error -> errorCancelacion = resultado.mensaje
+            }
+            accionCancelacion = false
+        }
+    }
+
+    fun declararInasistencia() {
+        scope.launch {
+            declarandoInasistencia = true
+            errorInasistencia = null
+            val resultado = safeApiCall {
+                RetrofitClient.versusService.reportarResultado(
+                    versusId,
+                    ReportarResultadoDto(sets_propios = 2, sets_rival = 0, inasistencia_rival = true),
+                )
+            }
+            when (resultado) {
+                is ApiResult.Exito -> {
+                    val actualizado = safeApiCall { RetrofitClient.versusService.obtenerVersus(versusId) }
+                    if (actualizado is ApiResult.Exito) versus = actualizado.datos
+                }
+                is ApiResult.Error -> errorInasistencia = resultado.mensaje
+            }
+            declarandoInasistencia = false
         }
     }
 
@@ -156,6 +209,14 @@ fun DetalleVersusScreen(
                 onAceptar = { responder(true) },
                 onRechazar = { responder(false) },
                 onVerPerfil = onVerPerfil,
+                accionCancelacion = accionCancelacion,
+                errorCancelacion = errorCancelacion,
+                onSolicitarCancelacion = { solicitarCancelacion() },
+                onAceptarCancelacion = { solicitarCancelacion() },
+                onRechazarCancelacion = { rechazarCancelacion() },
+                declarandoInasistencia = declarandoInasistencia,
+                errorInasistencia = errorInasistencia,
+                onDeclararInasistencia = { declararInasistencia() },
             )
         }
     }
@@ -174,6 +235,14 @@ private fun ContenidoDetalle(
     onAceptar: () -> Unit,
     onRechazar: () -> Unit,
     onVerPerfil: (RankingEntryDto) -> Unit = {},
+    accionCancelacion: Boolean = false,
+    errorCancelacion: String? = null,
+    onSolicitarCancelacion: () -> Unit = {},
+    onAceptarCancelacion: () -> Unit = {},
+    onRechazarCancelacion: () -> Unit = {},
+    declarandoInasistencia: Boolean = false,
+    errorInasistencia: String? = null,
+    onDeclararInasistencia: () -> Unit = {},
 ) {
     val jugador1 = jugadores.find { it.id == versus.jugador1_id }
     val jugador2 = jugadores.find { it.id == versus.jugador2_id }
@@ -288,6 +357,108 @@ private fun ContenidoDetalle(
         } else if (versus.estado == EstadoVersus.PENDIENTE && miId == versus.jugador1_id) {
             Spacer(Modifier.height(16.dp))
             TextoEstadoSecundario("Esperando que ${jugador2?.nombre ?: "tu rival"} responda el reto.")
+        }
+
+        // Cancelación de mutuo acuerdo — sirve también para "reprogramar"
+        // (cancelan y arman un reto nuevo con la fecha que acuerden por
+        // fuera) y para rechazar un reto que ya se había aceptado. Solo los
+        // dos jugadores designados pueden actuar acá, nunca su pareja de
+        // dobles — mismo criterio que aceptar/rechazar y reportar marcador.
+        val esJugadorDesignadoParaCancelar = miId != null && (versus.jugador1_id == miId || versus.jugador2_id == miId)
+        if (esJugadorDesignadoParaCancelar && versus.estado == EstadoVersus.ACEPTADO) {
+            val rivalNombre = (if (miId == versus.jugador1_id) jugador2?.nombre else jugador1?.nombre) ?: "tu rival"
+            when (versus.cancelacion_solicitada_por) {
+                null -> {
+                    Spacer(Modifier.height(24.dp))
+                    val (interaccionCancelar, escalaCancelar) = rememberInteraccionPresionable()
+                    OutlinedButton(
+                        onClick = onSolicitarCancelacion,
+                        enabled = !accionCancelacion,
+                        shape = RoundedCornerShape(12.dp),
+                        interactionSource = interaccionCancelar,
+                        modifier = Modifier.fillMaxWidth().height(48.dp).scale(escalaCancelar),
+                    ) { Text("CANCELAR / REPROGRAMAR RETO", style = CapsLabelTextStyle) }
+                }
+                miId -> {
+                    Spacer(Modifier.height(16.dp))
+                    TextoEstadoSecundario("Esperando que $rivalNombre acepte cancelar el reto.")
+                }
+                else -> {
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        "$rivalNombre propuso cancelar este reto",
+                        style = CapsLabelTextStyle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        val (interaccionMantener, escalaMantener) = rememberInteraccionPresionable()
+                        OutlinedButton(
+                            onClick = onRechazarCancelacion,
+                            enabled = !accionCancelacion,
+                            shape = RoundedCornerShape(12.dp),
+                            interactionSource = interaccionMantener,
+                            modifier = Modifier.weight(1f).height(48.dp).scale(escalaMantener),
+                        ) { Text("MANTENER RETO", style = CapsLabelTextStyle) }
+                        BotonTactil(
+                            texto = "Aceptar cancelación",
+                            onClick = onAceptarCancelacion,
+                            cargando = accionCancelacion,
+                            enabled = !accionCancelacion,
+                            colorContenedor = MaterialTheme.colorScheme.error,
+                            altura = 48.dp,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
+            if (errorCancelacion != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(errorCancelacion, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            }
+
+            // Solo aparece si el rival nunca llegó a reportar nada (todavía
+            // ACEPTADO) y ya pasó 1 hora de la hora pactada — el backend
+            // vuelve a chequear las dos cosas igual, esto es solo para no
+            // mostrar un botón que va a fallar.
+            if (versus.fecha_hora.yaPasoUnaHoraDesde()) {
+                var mostrarDialogoInasistencia by remember { mutableStateOf(false) }
+                Spacer(Modifier.height(12.dp))
+                val (interaccionInasistencia, escalaInasistencia) = rememberInteraccionPresionable()
+                OutlinedButton(
+                    onClick = { mostrarDialogoInasistencia = true },
+                    enabled = !declarandoInasistencia,
+                    shape = RoundedCornerShape(12.dp),
+                    interactionSource = interaccionInasistencia,
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                    modifier = Modifier.fillMaxWidth().height(48.dp).scale(escalaInasistencia),
+                ) { Text("DECLARAR VICTORIA POR INASISTENCIA", style = CapsLabelTextStyle) }
+                if (errorInasistencia != null) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(errorInasistencia, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                }
+                if (mostrarDialogoInasistencia) {
+                    AlertDialog(
+                        onDismissRequest = { mostrarDialogoInasistencia = false },
+                        title = { Text("¿Declarar victoria por inasistencia?") },
+                        text = { Text("$rivalNombre no se presentó al reto programado. Esto confirma el partido a tu favor y actualiza el Elo de los dos — si no es correcto, resuélvanlo entre ustedes antes de confirmar.") },
+                        confirmButton = {
+                            TextButton(onClick = { mostrarDialogoInasistencia = false; onDeclararInasistencia() }) {
+                                Text("Confirmar", color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { mostrarDialogoInasistencia = false }) { Text("Cancelar") }
+                        },
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(24.dp))

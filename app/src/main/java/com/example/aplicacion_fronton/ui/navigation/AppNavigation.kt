@@ -36,6 +36,7 @@ import com.example.aplicacion_fronton.ui.compromisos.InvitacionCompromisoScreen
 import com.example.aplicacion_fronton.ui.compromisos.RegistrarCompromisoScreen
 import com.example.aplicacion_fronton.ui.compromisos.VerificarComprobanteScreen
 import com.example.aplicacion_fronton.ui.compromisos.VictoriaApuestaScreen
+import com.example.aplicacion_fronton.ui.perfil.CompletarPerfilScreen
 import com.example.aplicacion_fronton.ui.perfil.PerfilJugadorHolder
 import com.example.aplicacion_fronton.ui.perfil.PerfilJugadorScreen
 import com.example.aplicacion_fronton.ui.ranking.SubidaRankingScreen
@@ -180,6 +181,17 @@ fun AppNavigation() {
                 onVerReporte = { navController.navigate(Screen.ReporteApuestas.route) },
                 onBuscarRivalesApuestas = { navController.navigate(Screen.BuscarRivales.route) },
                 onBuscarVersus = { navController.navigate(Screen.BuscarVersus.route) },
+            )
+        }
+        composable(Screen.CompletarPerfil.route) {
+            CompletarPerfilScreen(
+                onGeneroGuardado = {
+                    scope.launch {
+                        navController.navigate(destinoTrasIniciarSesion()) {
+                            popUpTo(Screen.CompletarPerfil.route) { inclusive = true }
+                        }
+                    }
+                },
             )
         }
         composable(Screen.BuscarRivales.route) {
@@ -496,8 +508,17 @@ private suspend fun irAHomeLimpiandoBackStack(navController: NavHostController) 
 
 /** Home, salvo que haya un reto recibido sin ver todavía — en ese caso la
  * animación de duelo se interpone antes, una sola vez por reto (ver
- * `verificarDueloPendiente`). */
+ * `verificarDueloPendiente`) — o, antes que nada, que la cuenta todavía no
+ * tenga género (campo agregado después del lanzamiento inicial): bloquea con
+ * CompletarPerfilScreen hasta que lo complete, ya que el onboarding tiene
+ * que resolverse antes que cualquier animación de celebración. Si el fetch
+ * del perfil falla (red), no se bloquea por eso — solo por género realmente
+ * ausente. */
 private suspend fun destinoTrasIniciarSesion(): String {
+    val perfil = safeApiCall { RetrofitClient.authService.obtenerMiPerfil() }
+    val usuario = (perfil as? ApiResult.Exito)?.datos
+    if (usuario != null && usuario.genero == null) return Screen.CompletarPerfil.route
+
     val dueloVersusId = verificarDueloPendiente()
     return if (dueloVersusId != null) Screen.DueloReto.ruta(dueloVersusId) else Screen.Tabs.route
 }

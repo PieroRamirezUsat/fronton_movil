@@ -15,3 +15,13 @@ fun String.yaComenzoElVersus(): Boolean = try {
 } catch (e: Exception) {
     false
 }
+
+/** true si ya pasó una hora desde `this` (`fecha_hora` de un versus) — el
+ * mismo margen de gracia que exige el backend antes de habilitar "Declarar
+ * victoria por inasistencia". Solo para no mostrar acá un botón que el
+ * backend igual va a rechazar; el chequeo real vive del lado del servidor. */
+fun String.yaPasoUnaHoraDesde(): Boolean = try {
+    OffsetDateTime.parse(this).plusHours(1).isBefore(OffsetDateTime.now())
+} catch (e: Exception) {
+    false
+}

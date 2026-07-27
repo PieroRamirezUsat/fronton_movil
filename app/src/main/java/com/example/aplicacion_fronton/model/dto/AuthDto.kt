@@ -36,7 +36,8 @@ data class GoogleCompletarRequestDto(
     val id_token: String,
     val club: String?,
     val categoria_edad: CategoriaEdad,
-    val mano_habil: ManoHabil
+    val mano_habil: ManoHabil,
+    val genero: Genero
 )
 
 data class CambiarPasswordRequestDto(

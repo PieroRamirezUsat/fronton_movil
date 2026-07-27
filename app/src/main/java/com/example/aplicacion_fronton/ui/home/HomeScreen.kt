@@ -9,6 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -156,8 +158,9 @@ fun HomeScreen(
 
                 Column(
                     modifier = Modifier
+                        .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp)
-                        .padding(top = 16.dp),
+                        .padding(top = 16.dp, bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(32.dp),
                 ) {
                     // Cascada de aparición por sección (fade+slide con delay escalonado

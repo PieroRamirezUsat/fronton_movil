@@ -46,12 +46,14 @@ data class VersusDto(
     val created_at: String,
     val sets_jugador1: Int? = null,
     val sets_jugador2: Int? = null,
-    val mi_reporte_enviado: Boolean = false
+    val mi_reporte_enviado: Boolean = false,
+    val cancelacion_solicitada_por: Int? = null
 )
 
 data class ReportarResultadoDto(
     val sets_propios: Int,
-    val sets_rival: Int
+    val sets_rival: Int,
+    val inasistencia_rival: Boolean = false
 )
 
 data class EloDeltaDto(

@@ -11,6 +11,7 @@ sealed class Screen(val route: String) {
         fun ruta(correo: String) = "confirmar_reset/${Uri.encode(correo)}"
     }
     data object Tabs : Screen("tabs")
+    data object CompletarPerfil : Screen("completar_perfil")
     data object PerfilJugador : Screen("perfil_jugador")
     data object CrearReto : Screen("crear_reto")
     data object DetalleVersus : Screen("detalle_versus/{versusId}") {
