@@ -2,9 +2,11 @@ package com.example.aplicacion_fronton.ui.ajustes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.aplicacion_fronton.model.dto.ActualizarGeneroRequestDto
 import com.example.aplicacion_fronton.model.dto.ActualizarPerfilRequestDto
 import com.example.aplicacion_fronton.model.dto.CambiarPasswordRequestDto
 import com.example.aplicacion_fronton.model.dto.CategoriaEdad
+import com.example.aplicacion_fronton.model.dto.Genero
 import com.example.aplicacion_fronton.model.dto.UsuarioDto
 import com.example.aplicacion_fronton.network.ApiResult
 import com.example.aplicacion_fronton.network.RetrofitClient
@@ -69,7 +71,7 @@ class AjustesViewModel : ViewModel() {
         }
     }
 
-    fun guardarPerfil(club: String?, categoriaEdad: CategoriaEdad) {
+    fun guardarPerfil(club: String?, categoriaEdad: CategoriaEdad, genero: Genero) {
         viewModelScope.launch {
             _guardado.value = GuardadoState.Guardando
             val resultado = safeApiCall {
@@ -77,8 +79,16 @@ class AjustesViewModel : ViewModel() {
             }
             when (resultado) {
                 is ApiResult.Exito -> {
-                    _estado.value = AjustesState.Exito(resultado.datos)
-                    _guardado.value = GuardadoState.Guardado
+                    val resultadoGenero = safeApiCall {
+                        RetrofitClient.usuariosService.actualizarGenero(ActualizarGeneroRequestDto(genero))
+                    }
+                    when (resultadoGenero) {
+                        is ApiResult.Exito -> {
+                            _estado.value = AjustesState.Exito(resultadoGenero.datos)
+                            _guardado.value = GuardadoState.Guardado
+                        }
+                        is ApiResult.Error -> _guardado.value = GuardadoState.Error(resultadoGenero.mensaje)
+                    }
                 }
                 is ApiResult.Error -> _guardado.value = GuardadoState.Error(resultado.mensaje)
             }

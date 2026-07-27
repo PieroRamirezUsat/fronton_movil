@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.filled.Wc
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aplicacion_fronton.model.dto.CategoriaEdad
+import com.example.aplicacion_fronton.model.dto.Genero
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -45,6 +47,11 @@ private val etiquetasCategoriaAjustes = mapOf(
     CategoriaEdad.MAS_40 to "+40",
     CategoriaEdad.MAS_50 to "+50",
     CategoriaEdad.MAS_60 to "+60",
+)
+
+private val etiquetasGeneroAjustes = mapOf(
+    Genero.MASCULINO to "Masculino",
+    Genero.FEMENINO to "Femenino",
 )
 
 @Composable
@@ -102,6 +109,7 @@ fun AjustesScreen(
                 var club by remember(actual.usuario.club) { mutableStateOf(actual.usuario.club.orEmpty()) }
                 var esJugadorLibre by remember(actual.usuario.club) { mutableStateOf(actual.usuario.club == null) }
                 var categoria by remember(actual.usuario.categoria_edad) { mutableStateOf(actual.usuario.categoria_edad) }
+                var genero by remember(actual.usuario.genero) { mutableStateOf(actual.usuario.genero ?: Genero.MASCULINO) }
 
                 Column(
                     modifier = Modifier
@@ -162,6 +170,32 @@ fun AjustesScreen(
                         }
                     }
 
+                    Spacer(Modifier.height(24.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.Wc, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(12.dp))
+                        Text("Género", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        etiquetasGeneroAjustes.forEach { (valor, etiqueta) ->
+                            val activo = genero == valor
+                            Text(
+                                etiqueta,
+                                style = CapsLabelTextStyle,
+                                fontWeight = if (activo) FontWeight.Bold else FontWeight.Medium,
+                                color = if (activo) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    .clickable { genero = valor }
+                                    .padding(vertical = 10.dp),
+                            )
+                        }
+                    }
+
                     if (guardado is GuardadoState.Error) {
                         Spacer(Modifier.height(12.dp))
                         Text((guardado as GuardadoState.Error).mensaje, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -176,7 +210,7 @@ fun AjustesScreen(
                         cargando = guardado is GuardadoState.Guardando,
                         onClick = {
                             viewModel.limpiarGuardado()
-                            viewModel.guardarPerfil(if (esJugadorLibre) null else club.trim().ifBlank { null }, categoria)
+                            viewModel.guardarPerfil(if (esJugadorLibre) null else club.trim().ifBlank { null }, categoria, genero)
                         },
                         colorContenedor = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
