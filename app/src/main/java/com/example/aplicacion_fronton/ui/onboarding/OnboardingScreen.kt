@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,30 +39,40 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
+import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import kotlinx.coroutines.launch
 
 private data class PaginaOnboarding(val icono: ImageVector, val titulo: String, val descripcion: String)
 
+// Ordenadas como pasos reales (no una lista de features sueltas): lo primero
+// que hace falta hacer, en el orden en que un jugador nuevo lo va a necesitar
+// — completar perfil primero (si no, ranking/apuestas lo ubican mal), después
+// retar, después reportar el resultado, y recién ahí lo social/las apuestas.
 private val PAGINAS = listOf(
     PaginaOnboarding(
+        Icons.Filled.Person,
+        "Completá tu perfil",
+        "Categoría de edad, mano hábil y club (o \"jugador libre\") — así el ranking y las apuestas te ubican bien desde el primer partido.",
+    ),
+    PaginaOnboarding(
         Icons.Filled.SportsTennis,
-        "Retá a cualquier rival",
-        "Buscá jugadores de tu categoría, mandá un reto y coordiná cancha y horario, todo desde la app.",
+        "Buscá un rival y retalo",
+        "Elegí a alguien de tu nivel en \"Buscar rivales\", mandale un reto y coordinen cancha y horario — el otro tiene que aceptarlo primero.",
     ),
     PaginaOnboarding(
         Icons.Filled.EmojiEvents,
-        "Subí en el ranking",
-        "Cada partido que reportás mueve tu Elo. Seguí tu progreso y tu división, de Hierro a Platino.",
+        "Jugá y reportá el marcador",
+        "Cuando termina el partido, cargá el resultado desde el detalle del reto. Tu Elo y tu división (Hierro a Platino) se actualizan solos.",
     ),
     PaginaOnboarding(
         Icons.Filled.Forum,
         "Sumate a la comunidad",
-        "Compartí fotos de tus partidos y dale like y comentá las publicaciones de otros jugadores.",
+        "Subí fotos de tus partidos, dale like y comentá las publicaciones de otros jugadores en la pestaña Comunidad.",
     ),
     PaginaOnboarding(
         Icons.Filled.MonetizationOn,
         "Apostá con confianza",
-        "Registrá compromisos informales con tus rivales — comprobante, visto bueno y todo con historial.",
+        "Registrá un compromiso informal con tu rival antes de jugar — comprobante, visto bueno de ambos y todo queda con historial.",
     ),
 )
 
@@ -85,7 +96,7 @@ fun OnboardingScreen(onTerminado: () -> Unit) {
         }
 
         HorizontalPager(state = estadoPager, modifier = Modifier.weight(1f)) { pagina ->
-            PaginaOnboardingContenido(PAGINAS[pagina])
+            PaginaOnboardingContenido(numero = pagina + 1, total = PAGINAS.size, pagina = PAGINAS[pagina])
         }
 
         Row(
@@ -123,7 +134,7 @@ fun OnboardingScreen(onTerminado: () -> Unit) {
 }
 
 @Composable
-private fun PaginaOnboardingContenido(pagina: PaginaOnboarding) {
+private fun PaginaOnboardingContenido(numero: Int, total: Int, pagina: PaginaOnboarding) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -144,12 +155,18 @@ private fun PaginaOnboardingContenido(pagina: PaginaOnboarding) {
             )
         }
         Text(
+            "PASO $numero DE $total",
+            style = CapsLabelTextStyle,
+            color = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.padding(top = 20.dp),
+        )
+        Text(
             pagina.titulo,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = 32.dp),
+            modifier = Modifier.padding(top = 8.dp),
         )
         Text(
             pagina.descripcion,
