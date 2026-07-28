@@ -605,6 +605,21 @@ private fun volverALogin(navController: NavHostController) {
  * página en la que ya estaba — y recién ahí dispara el salto puntual vía su
  * SavedStateHandle (ver CLAVE_TABS_PAGINA_OBJETIVO en TabsShellScreen.kt). */
 private fun irATabDesdeOtroDestino(navController: NavHostController, item: ItemBarraInferior) {
-    navController.getBackStackEntry(Screen.Tabs.route).savedStateHandle[CLAVE_TABS_PAGINA_OBJETIVO] = item.name
-    navController.popBackStack(Screen.Tabs.route, inclusive = false)
+    // `getBackStackEntry` explota con IllegalArgumentException si "tabs" no
+    // está en la pila — pasaba siempre que la animación de Duelo se dispara
+    // recién abriendo la app (`destinoTrasIniciarSesion()` navega directo a
+    // DueloReto con `popUpTo(Splash)`/`popUpTo(0)`, así que Tabs nunca llegó a
+    // apilarse debajo) y el usuario tocaba "Ver reto" o "Ahora no": la app se
+    // cerraba de golpe. El resto de las pantallas que llaman a esta función
+    // siempre se alcanzan estando YA adentro de Tabs, así que para ellas
+    // `getBackStackEntry` nunca falla — este fallback es solo para el caso de
+    // Duelo, y cae a Inicio (la página inicial real de Tabs) en vez de
+    // reventar.
+    val entradaTabs = runCatching { navController.getBackStackEntry(Screen.Tabs.route) }.getOrNull()
+    if (entradaTabs != null) {
+        entradaTabs.savedStateHandle[CLAVE_TABS_PAGINA_OBJETIVO] = item.name
+        navController.popBackStack(Screen.Tabs.route, inclusive = false)
+    } else {
+        navController.navigate(Screen.Tabs.route) { popUpTo(0) }
+    }
 }
