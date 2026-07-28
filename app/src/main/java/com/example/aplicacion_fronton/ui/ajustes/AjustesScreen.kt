@@ -1,5 +1,7 @@
 package com.example.aplicacion_fronton.ui.ajustes
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -39,6 +42,8 @@ import com.example.aplicacion_fronton.model.dto.CategoriaEdad
 import com.example.aplicacion_fronton.model.dto.Genero
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
+import com.example.aplicacion_fronton.ui.componentes.rememberInteraccionPresionable
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 
 private val etiquetasCategoriaAjustes = mapOf(
@@ -91,7 +96,7 @@ fun AjustesScreen(
     ) { padding ->
         when (val actual = estado) {
             is AjustesState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is AjustesState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
@@ -154,16 +159,18 @@ fun AjustesScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                         etiquetasCategoriaAjustes.forEach { (valor, etiqueta) ->
                             val activo = categoria == valor
+                            val colorTexto by animateColorAsState(if (activo) Color.White else MaterialTheme.colorScheme.onSurfaceVariant, tween(200), label = "colorCategoriaAjustes")
+                            val colorFondo by animateColorAsState(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh, tween(200), label = "fondoCategoriaAjustes")
                             Text(
                                 etiqueta,
                                 style = CapsLabelTextStyle,
                                 fontWeight = if (activo) FontWeight.Bold else FontWeight.Medium,
-                                color = if (activo) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = colorTexto,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    .background(colorFondo)
                                     .clickable { categoria = valor }
                                     .padding(vertical = 10.dp),
                             )
@@ -180,16 +187,18 @@ fun AjustesScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                         etiquetasGeneroAjustes.forEach { (valor, etiqueta) ->
                             val activo = genero == valor
+                            val colorTexto by animateColorAsState(if (activo) Color.White else MaterialTheme.colorScheme.onSurfaceVariant, tween(200), label = "colorGeneroAjustes")
+                            val colorFondo by animateColorAsState(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh, tween(200), label = "fondoGeneroAjustes")
                             Text(
                                 etiqueta,
                                 style = CapsLabelTextStyle,
                                 fontWeight = if (activo) FontWeight.Bold else FontWeight.Medium,
-                                color = if (activo) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = colorTexto,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    .background(colorFondo)
                                     .clickable { genero = valor }
                                     .padding(vertical = 10.dp),
                             )
@@ -358,7 +367,8 @@ private fun DialogoConfirmarEliminar(
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirmar, enabled = !eliminando) {
+            val (interaccion, escala) = rememberInteraccionPresionable()
+            TextButton(onClick = onConfirmar, enabled = !eliminando, interactionSource = interaccion, modifier = Modifier.scale(escala)) {
                 Text(if (eliminando) "Eliminando…" else "Sí, eliminar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
         },

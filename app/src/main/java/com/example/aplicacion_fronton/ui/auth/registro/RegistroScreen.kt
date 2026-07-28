@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -613,15 +614,17 @@ private fun PasoDetalles(
     ) {
         listOf(ManoHabil.DIESTRO to "Diestro", ManoHabil.ZURDO to "Zurdo").forEach { (valor, etiqueta) ->
             val activo = manoHabil == valor
+            val colorTexto by animateColorAsState(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, tween(200), label = "colorManoHabil")
+            val colorFondo by animateColorAsState(if (activo) MaterialTheme.colorScheme.surfaceBright else Color.Transparent, tween(200), label = "fondoManoHabil")
             Text(
                 etiqueta,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall,
-                color = if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                color = colorTexto,
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(if (activo) MaterialTheme.colorScheme.surfaceBright else Color.Transparent)
+                    .background(colorFondo)
                     .clickable { onManoChange(valor) }
                     .padding(vertical = 14.dp),
             )
@@ -641,15 +644,17 @@ private fun PasoDetalles(
     ) {
         listOf(Genero.MASCULINO to "Masculino", Genero.FEMENINO to "Femenino").forEach { (valor, etiqueta) ->
             val activo = genero == valor
+            val colorTexto by animateColorAsState(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, tween(200), label = "colorGenero")
+            val colorFondo by animateColorAsState(if (activo) MaterialTheme.colorScheme.surfaceBright else Color.Transparent, tween(200), label = "fondoGenero")
             Text(
                 etiqueta,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall,
-                color = if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                color = colorTexto,
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(if (activo) MaterialTheme.colorScheme.surfaceBright else Color.Transparent)
+                    .background(colorFondo)
                     .clickable { onGeneroChange(valor) }
                     .padding(vertical = 14.dp),
             )
@@ -694,18 +699,17 @@ private fun FlowRowChips(seleccionado: CategoriaEdad, onSeleccionar: (CategoriaE
 
 @Composable
 private fun ChipCategoria(etiqueta: String, activo: Boolean, onClick: () -> Unit) {
+    val colorTexto by animateColorAsState(if (activo) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, tween(200), label = "colorChipCategoria")
+    val colorFondo by animateColorAsState(if (activo) MaterialTheme.colorScheme.primary else Color.Transparent, tween(200), label = "fondoChipCategoria")
+    val colorBorde by animateColorAsState(if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, tween(200), label = "bordeChipCategoria")
     Text(
         etiqueta,
         style = CapsLabelTextStyle,
-        color = if (activo) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        color = colorTexto,
         modifier = Modifier
             .clip(RoundedCornerShape(50))
-            .background(if (activo) MaterialTheme.colorScheme.primary else Color.Transparent)
-            .border(
-                2.dp,
-                if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                RoundedCornerShape(50),
-            )
+            .background(colorFondo)
+            .border(2.dp, colorBorde, RoundedCornerShape(50))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 8.dp),
     )

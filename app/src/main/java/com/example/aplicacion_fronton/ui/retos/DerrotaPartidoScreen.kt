@@ -15,10 +15,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,11 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
-import com.example.aplicacion_fronton.ui.componentes.ConfettiOverlay
 import com.example.aplicacion_fronton.ui.componentes.ResplandorRadial
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
@@ -56,12 +51,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-/** Celebración a pantalla completa al ganar un partido — mismo esqueleto de
- * coreografía que `DueloRetoScreen` (fade + rebote + confeti + resplandor +
- * botones diferidos), con identidad propia: fondo primary/teal de marca y
- * acentos dorados (trofeo), en vez de la partición roja/azul del duelo. */
+/** Reacción a pantalla completa al perder un partido — antes de esto, perder
+ * simplemente volvía en silencio con el mismo mensaje neutro "¡MARCADOR
+ * CONFIRMADO!" que usaba una victoria, sin ninguna reacción propia. Mismo
+ * esqueleto de coreografía que `VictoriaPartidoScreen` (reusa su mismo
+ * `VictoriaPartidoViewModel`, agnóstico a quién ganó) pero con identidad
+ * propia: tono secundario/apagado, ícono de pelota en vez de trofeo, y
+ * DELIBERADAMENTE sin `ConfettiOverlay` — un estallido de fiesta en una
+ * derrota se sentiría burlón. */
 @Composable
-fun VictoriaPartidoScreen(
+fun DerrotaPartidoScreen(
     versusId: Int,
     eloAntes: Int,
     eloDespues: Int,
@@ -73,17 +72,17 @@ fun VictoriaPartidoScreen(
     LaunchedEffect(versusId) { viewModel.cargar(versusId) }
 
     when (val actual = estado) {
-        is VictoriaPartidoState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary).safeDrawingPadding(), contentAlignment = Alignment.Center) {
+        is VictoriaPartidoState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondary).safeDrawingPadding(), contentAlignment = Alignment.Center) {
             CargandoPelotita(color = Color.White)
         }
-        is VictoriaPartidoState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
+        is VictoriaPartidoState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondary).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(actual.mensaje, color = Color.White, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(16.dp))
                 TextButton(onClick = onIrAHome) { Text("CONTINUAR", color = Color.White) }
             }
         }
-        is VictoriaPartidoState.Exito -> ContenidoVictoriaPartido(
+        is VictoriaPartidoState.Exito -> ContenidoDerrotaPartido(
             datos = actual.datos,
             eloAntes = eloAntes,
             eloDespues = eloDespues,
@@ -94,7 +93,7 @@ fun VictoriaPartidoScreen(
 }
 
 @Composable
-private fun ContenidoVictoriaPartido(
+private fun ContenidoDerrotaPartido(
     datos: VictoriaPartidoUi,
     eloAntes: Int,
     eloDespues: Int,
@@ -105,20 +104,18 @@ private fun ContenidoVictoriaPartido(
     val delta = eloDespues - eloAntes
 
     val alfaFondo = remember { Animatable(0f) }
-    val offsetTrofeoY = remember { Animatable(-140f) }
+    val offsetIconoY = remember { Animatable(-140f) }
     val offsetTituloY = remember { Animatable(80f) }
-    var mostrarParticulas by remember { mutableStateOf(false) }
     var mostrarElo by remember { mutableStateOf(false) }
     var mostrarAcciones by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         alfaFondo.animateTo(1f, tween(300))
         launch {
-            offsetTrofeoY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
+            offsetIconoY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
         }
 
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        mostrarParticulas = true
 
         delay(200)
         offsetTituloY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium))
@@ -134,40 +131,32 @@ private fun ContenidoVictoriaPartido(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { alpha = alfaFondo.value }
-            .background(MaterialTheme.colorScheme.primary)
+            .background(MaterialTheme.colorScheme.secondary)
             .safeDrawingPadding(),
     ) {
-        if (mostrarParticulas) {
-            ConfettiOverlay(
-                disparar = true,
-                modifier = Modifier.align(Alignment.Center),
-                colores = listOf(Color(0xFFFEC564), Color.White, MaterialTheme.colorScheme.secondaryContainer),
-            )
-        }
-
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.offset { IntOffset(0, offsetTrofeoY.value.roundToInt()) }) {
-                ResplandorRadial(color = MaterialTheme.colorScheme.secondaryContainer, tamaño = 220.dp, alpha = 0.4f)
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.offset { IntOffset(0, offsetIconoY.value.roundToInt()) }) {
+                ResplandorRadial(color = Color.White, tamaño = 220.dp, alpha = 0.25f)
                 Box(
                     modifier = Modifier
                         .size(96.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer)
-                        .border(3.dp, Color.White, CircleShape),
+                        .background(Color.White.copy(alpha = 0.15f))
+                        .border(3.dp, Color.White.copy(alpha = 0.6f), CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Filled.EmojiEvents, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(52.dp))
+                    Icon(Icons.Filled.SportsTennis, contentDescription = null, tint = Color.White, modifier = Modifier.size(48.dp))
                 }
             }
 
             Spacer(Modifier.height(28.dp))
 
             Text(
-                "¡GANASTE EL PARTIDO!",
+                "A POR LA REVANCHA",
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Black,
@@ -208,7 +197,7 @@ private fun ContenidoVictoriaPartido(
                         Text(
                             if (delta >= 0) "+$delta PTS" else "$delta PTS",
                             style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            color = Color.White,
                             fontWeight = FontWeight.Bold,
                         )
                     }
@@ -230,8 +219,8 @@ private fun ContenidoVictoriaPartido(
                     icono = Icons.Filled.Person,
                     saltoElastico = true,
                     onClick = onVerDetalle,
-                    colorContenedor = MaterialTheme.colorScheme.secondaryContainer,
-                    colorTexto = MaterialTheme.colorScheme.onSecondaryContainer,
+                    colorContenedor = Color.White,
+                    colorTexto = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(12.dp))

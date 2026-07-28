@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
@@ -33,6 +34,8 @@ import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonCerrar
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
+import com.example.aplicacion_fronton.ui.componentes.rememberInteraccionPresionable
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
 
@@ -72,7 +75,7 @@ fun InvitacionCompromisoScreen(
     ) { padding ->
         when (val actual = estado) {
             is InvitacionState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is InvitacionState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
@@ -223,7 +226,13 @@ private fun ContenidoInvitacion(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(10.dp))
-            TextButton(onClick = onRechazar, enabled = !enviando, modifier = Modifier.fillMaxWidth()) {
+            val (interaccionRechazar, escalaRechazar) = rememberInteraccionPresionable()
+            TextButton(
+                onClick = onRechazar,
+                enabled = !enviando,
+                interactionSource = interaccionRechazar,
+                modifier = Modifier.fillMaxWidth().scale(escalaRechazar),
+            ) {
                 Text("RECHAZAR", style = CapsLabelTextStyle, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

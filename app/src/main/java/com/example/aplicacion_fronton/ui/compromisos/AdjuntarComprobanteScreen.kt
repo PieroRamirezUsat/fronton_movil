@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.network.uriAParteMultipart
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 
 @Composable
@@ -78,7 +79,7 @@ fun AdjuntarComprobanteScreen(
     ) { padding ->
         when (val actual = estado) {
             is AdjuntarComprobanteEstado.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is AdjuntarComprobanteEstado.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)

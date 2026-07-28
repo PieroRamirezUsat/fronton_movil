@@ -27,7 +27,11 @@ import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +55,8 @@ import com.example.aplicacion_fronton.model.dto.Modalidad
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
+import com.example.aplicacion_fronton.ui.componentes.SkeletonListaFilas
 import com.example.aplicacion_fronton.ui.componentes.TarjetaPartidoHistorial
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
@@ -85,9 +91,7 @@ fun HistorialVersusScreen(
         },
     ) { padding ->
         when (val actual = estado) {
-            is HistorialState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            is HistorialState.Cargando -> SkeletonListaFilas(padding)
             is HistorialState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
             }
@@ -114,6 +118,10 @@ private fun ContenidoHistorial(
     val victorias = filtrados.count { it.gane }
     val derrotas = filtrados.size - victorias
 
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { visible = true }
+
+  SeccionEnCascada(visible, retraso = 0) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
@@ -236,6 +244,7 @@ private fun ContenidoHistorial(
             }
         }
     }
+  }
 }
 
 /** Gráfico de evolución de Elo dibujado a mano con Canvas — no hay librería de

@@ -49,6 +49,7 @@ import com.example.aplicacion_fronton.network.safeApiCall
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
 import com.example.aplicacion_fronton.ui.componentes.rememberInteraccionPresionable
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -192,7 +193,7 @@ fun DetalleVersusScreen(
     ) { paddingInterno ->
         when {
             cargando -> Box(Modifier.fillMaxSize().padding(paddingInterno), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             error != null || versus == null -> Box(Modifier.fillMaxSize().padding(paddingInterno).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(error ?: "No se pudo cargar este reto.", color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
@@ -449,7 +450,12 @@ private fun ContenidoDetalle(
                         title = { Text("¿Declarar victoria por inasistencia?") },
                         text = { Text("$rivalNombre no se presentó al reto programado. Esto confirma el partido a tu favor y actualiza el Elo de los dos — si no es correcto, resuélvanlo entre ustedes antes de confirmar.") },
                         confirmButton = {
-                            TextButton(onClick = { mostrarDialogoInasistencia = false; onDeclararInasistencia() }) {
+                            val (interaccionConfirmar, escalaConfirmar) = rememberInteraccionPresionable()
+                            TextButton(
+                                onClick = { mostrarDialogoInasistencia = false; onDeclararInasistencia() },
+                                interactionSource = interaccionConfirmar,
+                                modifier = Modifier.scale(escalaConfirmar),
+                            ) {
                                 Text("Confirmar", color = MaterialTheme.colorScheme.error)
                             }
                         },

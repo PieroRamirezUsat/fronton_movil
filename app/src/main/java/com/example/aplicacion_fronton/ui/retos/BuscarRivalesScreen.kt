@@ -39,6 +39,7 @@ import com.example.aplicacion_fronton.model.dto.RankingEntryDto
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonReintentar
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.SkeletonListaFilas
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
 
@@ -95,9 +96,7 @@ fun BuscarRivalesScreen(
         },
     ) { padding ->
         when (val actual = estado) {
-            is BuscarRivalesState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            is BuscarRivalesState.Cargando -> SkeletonListaFilas(padding)
             is BuscarRivalesState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)

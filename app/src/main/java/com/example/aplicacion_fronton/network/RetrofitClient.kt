@@ -20,17 +20,21 @@ object RetrofitClient {
         private set
     lateinit var posicionRankingStore: PosicionRankingStore
         private set
+    lateinit var divisionRankingStore: DivisionRankingStore
+        private set
     private var inicializado = false
 
     fun inicializar(
         tokenStoreInstancia: TokenStore,
         duelosMostradosStoreInstancia: DuelosMostradosStore,
         posicionRankingStoreInstancia: PosicionRankingStore,
+        divisionRankingStoreInstancia: DivisionRankingStore,
     ) {
         if (inicializado) return
         tokenStore = tokenStoreInstancia
         duelosMostradosStore = duelosMostradosStoreInstancia
         posicionRankingStore = posicionRankingStoreInstancia
+        divisionRankingStore = divisionRankingStoreInstancia
         inicializado = true
     }
 

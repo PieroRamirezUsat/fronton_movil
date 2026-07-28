@@ -11,6 +11,7 @@ import com.example.aplicacion_fronton.model.dto.soyEquipoJugador1
 import com.example.aplicacion_fronton.network.ApiResult
 import com.example.aplicacion_fronton.network.RetrofitClient
 import com.example.aplicacion_fronton.network.safeApiCall
+import com.example.aplicacion_fronton.ui.componentes.ORDEN_DIVISIONES
 import com.example.aplicacion_fronton.ui.retos.PartidoHistorialUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +39,10 @@ sealed class HomeState {
          * posición desde la última vez que se cargó Home en este dispositivo —
          * null si no mejoró o si es la primera vez que se guarda una posición. */
         val subidaRankingDetectada: Pair<Int, Int>? = null,
+        /** (división anterior, división nueva) cuando se detectó un ascenso de
+         * división (hierro→bronce, etc.) desde la última vez que se cargó Home
+         * en este dispositivo — mismo criterio que subidaRankingDetectada. */
+        val subidaDivisionDetectada: Pair<String, String>? = null,
     ) : HomeState()
     data class Error(val mensaje: String) : HomeState()
 }
@@ -138,7 +143,24 @@ class HomeViewModel : ViewModel() {
                 RetrofitClient.posicionRankingStore.guardarPosicion(usuario.id, miPosicionActual)
             }
 
-            _estado.value = HomeState.Exito(usuario, proximoUi, retosPendientes, actividadReciente, rankingPreview, subidaDetectada)
+            // Mismo criterio que la posición, pero comparando el ÍNDICE de la
+            // división en ORDEN_DIVISIONES (hierro < bronce < ... < platino) —
+            // solo dispara en un ascenso real, nunca en un descenso ni en la
+            // primera vez que se guarda algo en este dispositivo.
+            val miDivisionActual = listaJugadores.firstOrNull { it.id == usuario.id }?.division
+            val divisionGuardada = RetrofitClient.divisionRankingStore.obtenerDivisionGuardada(usuario.id)
+            val subidaDivision = if (miDivisionActual != null && divisionGuardada != null) {
+                val indiceActual = ORDEN_DIVISIONES.indexOf(miDivisionActual)
+                val indiceGuardado = ORDEN_DIVISIONES.indexOf(divisionGuardada)
+                if (indiceActual > indiceGuardado) divisionGuardada to miDivisionActual else null
+            } else {
+                null
+            }
+            if (miDivisionActual != null) {
+                RetrofitClient.divisionRankingStore.guardarDivision(usuario.id, miDivisionActual)
+            }
+
+            _estado.value = HomeState.Exito(usuario, proximoUi, retosPendientes, actividadReciente, rankingPreview, subidaDetectada, subidaDivision)
         }
     }
 }

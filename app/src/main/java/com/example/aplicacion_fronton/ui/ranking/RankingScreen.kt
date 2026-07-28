@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aplicacion_fronton.ui.componentes.InsigniaDivision
 import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.model.dto.RankingEntryDto
 import com.example.aplicacion_fronton.network.urlCompletaFoto
@@ -389,32 +390,6 @@ private fun FilaRanking(entrada: RankingEntryDto, esYo: Boolean, onClick: () -> 
             color = if (esYo) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
         )
     }
-}
-
-/** División estilo LoL (hierro/bronce/plata/oro/platino) — calculada por el
- * backend a partir del elo, mismo formato de mapeo enum-ish que
- * `iconoYColorTipo` en NotificacionesScreen. */
-private fun colorDivision(division: String): Color = when (division) {
-    "hierro" -> Color(0xFF6B7280)
-    "bronce" -> Color(0xFFC97B4A)
-    "plata" -> Color(0xFFB0B7C3)
-    "oro" -> Color(0xFFFFD54A)
-    "platino" -> Color(0xFF4FD8D8)
-    else -> Color(0xFF6B7280)
-}
-
-@Composable
-private fun InsigniaDivision(division: String) {
-    val color = colorDivision(division)
-    Text(
-        division.uppercase(),
-        style = CapsLabelTextStyle.copy(fontSize = 9.sp),
-        color = color,
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .border(1.dp, color, RoundedCornerShape(50))
-            .padding(horizontal = 8.dp, vertical = 3.dp),
-    )
 }
 
 @Composable

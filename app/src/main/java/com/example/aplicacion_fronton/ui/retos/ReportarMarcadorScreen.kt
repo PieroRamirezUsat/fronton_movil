@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
@@ -50,8 +51,10 @@ import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.ConfettiOverlay
 import com.example.aplicacion_fronton.ui.componentes.ResplandorRadial
+import com.example.aplicacion_fronton.ui.componentes.rememberInteraccionPresionable
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
 
@@ -60,6 +63,7 @@ fun ReportarMarcadorScreen(
     versusId: Int,
     onVolver: () -> Unit,
     onVictoria: (eloAntes: Int, eloDespues: Int) -> Unit,
+    onDerrota: (eloAntes: Int, eloDespues: Int) -> Unit,
     viewModel: ReportarMarcadorViewModel = viewModel(),
 ) {
     val carga by viewModel.carga.collectAsState()
@@ -88,7 +92,7 @@ fun ReportarMarcadorScreen(
     ) { padding ->
         when (val estado = carga) {
             is CargaPartidoState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is CargaPartidoState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(estado.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
@@ -100,6 +104,7 @@ fun ReportarMarcadorScreen(
                 onEnviar = { propios, rival -> viewModel.enviarMarcador(versusId, propios, rival, estado.miId) },
                 onFinalizar = onVolver,
                 onVictoria = onVictoria,
+                onDerrota = onDerrota,
                 onReintentar = viewModel::reintentar,
             )
         }
@@ -114,6 +119,7 @@ private fun ContenidoReportar(
     onEnviar: (Int, Int) -> Unit,
     onFinalizar: () -> Unit,
     onVictoria: (eloAntes: Int, eloDespues: Int) -> Unit,
+    onDerrota: (eloAntes: Int, eloDespues: Int) -> Unit,
     onReintentar: () -> Unit,
 ) {
     var setsPropios by remember { mutableIntStateOf(0) }
@@ -241,7 +247,7 @@ private fun ContenidoReportar(
                     if (envio.setsPropios > envio.setsRival) {
                         onVictoria(envio.eloAntes, envio.eloDespues)
                     } else {
-                        onFinalizar()
+                        onDerrota(envio.eloAntes, envio.eloDespues)
                     }
                 },
                 colorContenedor = MaterialTheme.colorScheme.primary,
@@ -319,11 +325,23 @@ private fun JugadorMini(nombre: String, fotoUrl: String?, colorBorde: Color, mod
 @Composable
 private fun SelectorSet(valor: Int, onIncrementar: () -> Unit, onDecrementar: () -> Unit, habilitado: Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        IconButton(onClick = onIncrementar, enabled = habilitado, modifier = Modifier.size(44.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f))) {
+        val (interaccionSumar, escalaSumar) = rememberInteraccionPresionable()
+        IconButton(
+            onClick = onIncrementar,
+            enabled = habilitado,
+            interactionSource = interaccionSumar,
+            modifier = Modifier.size(44.dp).scale(escalaSumar).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)),
+        ) {
             Icon(Icons.Filled.Add, contentDescription = "Sumar set", tint = Color.White)
         }
         Text(valor.toString(), style = NumericTextStyle.copy(fontSize = 56.sp, fontWeight = FontWeight.Bold), color = Color.White)
-        IconButton(onClick = onDecrementar, enabled = habilitado, modifier = Modifier.size(44.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f))) {
+        val (interaccionRestar, escalaRestar) = rememberInteraccionPresionable()
+        IconButton(
+            onClick = onDecrementar,
+            enabled = habilitado,
+            interactionSource = interaccionRestar,
+            modifier = Modifier.size(44.dp).scale(escalaRestar).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)),
+        ) {
             Icon(Icons.Filled.Remove, contentDescription = "Restar set", tint = Color.White)
         }
     }

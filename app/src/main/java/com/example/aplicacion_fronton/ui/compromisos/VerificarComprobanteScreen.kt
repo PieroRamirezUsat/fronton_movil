@@ -12,6 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +28,8 @@ import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonCerrar
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
+import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 
 @Composable
@@ -73,14 +78,18 @@ fun VerificarComprobanteScreen(
     ) { padding ->
         when (val actual = estado) {
             is VerificarComprobanteEstado.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is VerificarComprobanteEstado.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
             }
-            is VerificarComprobanteEstado.Exito -> Column(
+            is VerificarComprobanteEstado.Exito -> {
+              var visible by remember { mutableStateOf(false) }
+              LaunchedEffect(Unit) { visible = true }
+              SeccionEnCascada(visible, retraso = 0) {
+              Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp, vertical = 16.dp),
-            ) {
+              ) {
                 val c = actual.compromiso
                 Column(
                     modifier = Modifier
@@ -147,6 +156,8 @@ fun VerificarComprobanteScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(8.dp))
+              }
+              }
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aplicacion_fronton.model.dto.NotificacionDto
 import com.example.aplicacion_fronton.model.dto.TipoNotificacion
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.EstadoVacio
 import com.example.aplicacion_fronton.ui.componentes.PillFiltro
 import com.example.aplicacion_fronton.ui.componentes.SeccionEnCascada
@@ -81,15 +83,21 @@ private fun iconoYColorTipo(tipo: TipoNotificacion): Pair<ImageVector, Color> = 
     TipoNotificacion.COMPROMISO_COMPROBANTE_SUBIDO -> Icons.Filled.Receipt to Color(0xFF7E5700)
     TipoNotificacion.COMPROMISO_SALDADO -> Icons.Filled.CheckCircle to Color(0xFF146259)
     TipoNotificacion.COMPROMISO_DISPUTA -> Icons.Filled.WarningAmber to Color(0xFFBA1A1A)
+    TipoNotificacion.RETO_CANCELACION_PROPUESTA -> Icons.Filled.Schedule to Color(0xFF7E5700)
+    TipoNotificacion.RETO_CANCELADO -> Icons.Filled.Cancel to Color(0xFF782208)
+    TipoNotificacion.RETO_CANCELACION_RECHAZADA -> Icons.Filled.SportsTennis to Color(0xFF146259)
+    TipoNotificacion.RETO_INASISTENCIA -> Icons.Filled.WarningAmber to Color(0xFFBA1A1A)
+    TipoNotificacion.RECORDATORIO_RETO -> Icons.Filled.Schedule to Color(0xFF7E5700)
 }
 
-// Los únicos 4 tipos donde todavía hay una decisión real esperando al
+// Los únicos 5 tipos donde todavía hay una decisión real esperando al
 // usuario — el resto es informativo (ya pasó, no hay nada que resolver).
 private val TIPOS_ACCIONABLES = setOf(
     TipoNotificacion.RETO_RECIBIDO,
     TipoNotificacion.MARCADOR_PENDIENTE,
     TipoNotificacion.COMPROMISO_RECIBIDO,
     TipoNotificacion.COMPROMISO_COMPROBANTE_SUBIDO,
+    TipoNotificacion.RETO_CANCELACION_PROPUESTA,
 )
 
 @Composable
@@ -159,7 +167,7 @@ fun NotificacionesScreen(
 
         when (val actual = estado) {
             is NotificacionesState.Cargando -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is NotificacionesState.Error -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(actual.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
@@ -186,13 +194,17 @@ fun NotificacionesScreen(
                     } else {
                         var visible by remember { mutableStateOf(false) }
                         LaunchedEffect(Unit) { visible = true }
-                        SeccionEnCascada(visible, retraso = 0) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                items(pendientes, key = { it.id }) { notificacion ->
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            itemsIndexed(pendientes, key = { _, n -> n.id }) { index, notificacion ->
+                                // Escalonado por ítem (no solo por sección) —
+                                // son todas accionables, así que cada una
+                                // "entra" en cascada en vez de aparecer todas
+                                // de golpe.
+                                SeccionEnCascada(visible, retraso = index * 40) {
                                     TarjetaNotificacion(notificacion, destacada = true) {
                                         viewModel.marcarLeida(notificacion.id)
                                         onAbrirNotificacion(notificacion)
@@ -223,10 +235,12 @@ fun NotificacionesScreen(
                     ) {
                         if (nuevas.isNotEmpty()) {
                             item { EncabezadoSeccion("NUEVAS", MaterialTheme.colorScheme.tertiary) }
-                            items(nuevas, key = { it.id }) { notificacion ->
-                                TarjetaNotificacion(notificacion, destacada = true) {
-                                    viewModel.marcarLeida(notificacion.id)
-                                    onAbrirNotificacion(notificacion)
+                            itemsIndexed(nuevas, key = { _, n -> n.id }) { index, notificacion ->
+                                SeccionEnCascada(visible, retraso = index * 40) {
+                                    TarjetaNotificacion(notificacion, destacada = true) {
+                                        viewModel.marcarLeida(notificacion.id)
+                                        onAbrirNotificacion(notificacion)
+                                    }
                                 }
                             }
                         }

@@ -15,6 +15,11 @@ enum class TipoNotificacion {
     @SerializedName("compromiso_comprobante_subido") COMPROMISO_COMPROBANTE_SUBIDO,
     @SerializedName("compromiso_saldado") COMPROMISO_SALDADO,
     @SerializedName("compromiso_disputa") COMPROMISO_DISPUTA,
+    @SerializedName("reto_cancelacion_propuesta") RETO_CANCELACION_PROPUESTA,
+    @SerializedName("reto_cancelado") RETO_CANCELADO,
+    @SerializedName("reto_cancelacion_rechazada") RETO_CANCELACION_RECHAZADA,
+    @SerializedName("reto_inasistencia") RETO_INASISTENCIA,
+    @SerializedName("recordatorio_reto") RECORDATORIO_RETO,
 }
 
 data class NotificacionDto(

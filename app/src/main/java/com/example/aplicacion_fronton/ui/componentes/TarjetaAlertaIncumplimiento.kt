@@ -136,7 +136,7 @@ private fun DialogHistorialCumplimiento(usuarioId: Int, nombre: String, onCerrar
                     Text(error ?: "No se pudo cargar el historial.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
                 }
                 listaActual == null -> Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CargandoPelotita()
                 }
                 listaActual.isEmpty() -> Column(modifier = Modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Sin historial itemizado todavía.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)

@@ -1,6 +1,7 @@
 package com.example.aplicacion_fronton
 
 import android.app.Application
+import com.example.aplicacion_fronton.network.DivisionRankingStore
 import com.example.aplicacion_fronton.network.DuelosMostradosStore
 import com.example.aplicacion_fronton.network.PosicionRankingStore
 import com.example.aplicacion_fronton.network.RetrofitClient
@@ -13,6 +14,7 @@ class FrontonApp : Application() {
             TokenStore(applicationContext),
             DuelosMostradosStore(applicationContext),
             PosicionRankingStore(applicationContext),
+            DivisionRankingStore(applicationContext),
         )
     }
 }

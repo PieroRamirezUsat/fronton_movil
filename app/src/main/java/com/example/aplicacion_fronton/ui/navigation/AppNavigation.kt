@@ -39,6 +39,7 @@ import com.example.aplicacion_fronton.ui.compromisos.VictoriaApuestaScreen
 import com.example.aplicacion_fronton.ui.perfil.CompletarPerfilScreen
 import com.example.aplicacion_fronton.ui.perfil.PerfilJugadorHolder
 import com.example.aplicacion_fronton.ui.perfil.PerfilJugadorScreen
+import com.example.aplicacion_fronton.ui.ranking.SubidaDivisionScreen
 import com.example.aplicacion_fronton.ui.ranking.SubidaRankingScreen
 import com.example.aplicacion_fronton.ui.retos.BuscarRivalesScreen
 import com.example.aplicacion_fronton.ui.retos.BuscarVersusScreen
@@ -48,6 +49,7 @@ import com.example.aplicacion_fronton.ui.retos.DueloRetoScreen
 import com.example.aplicacion_fronton.ui.retos.HistorialVersusScreen
 import com.example.aplicacion_fronton.ui.retos.ReportarMarcadorScreen
 import com.example.aplicacion_fronton.ui.retos.RetoHolder
+import com.example.aplicacion_fronton.ui.retos.DerrotaPartidoScreen
 import com.example.aplicacion_fronton.ui.retos.VictoriaPartidoScreen
 import com.example.aplicacion_fronton.ui.splash.SplashScreen
 import kotlinx.coroutines.launch
@@ -151,6 +153,9 @@ fun AppNavigation() {
                 onSubidaRanking = { posicionAnterior, posicionNueva ->
                     navController.navigate(Screen.SubidaRanking.ruta(posicionAnterior, posicionNueva))
                 },
+                onSubidaDivision = { divisionAnterior, divisionNueva ->
+                    navController.navigate(Screen.SubidaDivision.ruta(divisionAnterior, divisionNueva))
+                },
                 onJugadorSeleccionado = { entrada, modalidad ->
                     PerfilJugadorHolder.guardar(
                         PerfilJugadorHolder.Datos(
@@ -181,6 +186,9 @@ fun AppNavigation() {
                 onVerReporte = { navController.navigate(Screen.ReporteApuestas.route) },
                 onBuscarRivalesApuestas = { navController.navigate(Screen.BuscarRivales.route) },
                 onBuscarVersus = { navController.navigate(Screen.BuscarVersus.route) },
+                onAbrirBanner = { datos ->
+                    datos.tipo?.let { tipo -> abrirNotificacion(navController, tipo, datos.versusId, datos.compromisoId) }
+                },
             )
         }
         composable(Screen.CompletarPerfil.route) {
@@ -303,6 +311,11 @@ fun AppNavigation() {
                 onVolver = { navController.popBackStack() },
                 onVictoria = { eloAntes, eloDespues ->
                     navController.navigate(Screen.VictoriaPartido.ruta(versusId, eloAntes, eloDespues)) {
+                        popUpTo(Screen.ReportarMarcador.route) { inclusive = true }
+                    }
+                },
+                onDerrota = { eloAntes, eloDespues ->
+                    navController.navigate(Screen.DerrotaPartido.ruta(versusId, eloAntes, eloDespues)) {
                         popUpTo(Screen.ReportarMarcador.route) { inclusive = true }
                     }
                 },
@@ -431,6 +444,25 @@ fun AppNavigation() {
             )
         }
         composable(
+            Screen.DerrotaPartido.route,
+            arguments = listOf(
+                navArgument("versusId") { type = NavType.IntType },
+                navArgument("eloAntes") { type = NavType.IntType },
+                navArgument("eloDespues") { type = NavType.IntType },
+            ),
+        ) { backStackEntry ->
+            val versusId = backStackEntry.arguments?.getInt("versusId") ?: 0
+            val eloAntes = backStackEntry.arguments?.getInt("eloAntes") ?: 0
+            val eloDespues = backStackEntry.arguments?.getInt("eloDespues") ?: 0
+            DerrotaPartidoScreen(
+                versusId = versusId,
+                eloAntes = eloAntes,
+                eloDespues = eloDespues,
+                onVerDetalle = { navController.popBackStack() },
+                onIrAHome = { irATabDesdeOtroDestino(navController, ItemBarraInferior.INICIO) },
+            )
+        }
+        composable(
             Screen.SubidaRanking.route,
             arguments = listOf(
                 navArgument("posicionAnterior") { type = NavType.IntType },
@@ -442,6 +474,22 @@ fun AppNavigation() {
             SubidaRankingScreen(
                 posicionAnterior = posicionAnterior,
                 posicionNueva = posicionNueva,
+                onVerRanking = { irATabDesdeOtroDestino(navController, ItemBarraInferior.RANKING) },
+                onIrAHome = { navController.popBackStack() },
+            )
+        }
+        composable(
+            Screen.SubidaDivision.route,
+            arguments = listOf(
+                navArgument("divisionAnterior") { type = NavType.StringType },
+                navArgument("divisionNueva") { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            val divisionAnterior = backStackEntry.arguments?.getString("divisionAnterior") ?: ""
+            val divisionNueva = backStackEntry.arguments?.getString("divisionNueva") ?: ""
+            SubidaDivisionScreen(
+                divisionAnterior = divisionAnterior,
+                divisionNueva = divisionNueva,
                 onVerRanking = { irATabDesdeOtroDestino(navController, ItemBarraInferior.RANKING) },
                 onIrAHome = { navController.popBackStack() },
             )
@@ -478,6 +526,11 @@ private fun abrirNotificacion(navController: NavHostController, tipo: TipoNotifi
         TipoNotificacion.MARCADOR_PENDIENTE,
         TipoNotificacion.RESULTADO_CONFIRMADO,
         TipoNotificacion.RESULTADO_DISPUTA,
+        TipoNotificacion.RETO_CANCELACION_PROPUESTA,
+        TipoNotificacion.RETO_CANCELADO,
+        TipoNotificacion.RETO_CANCELACION_RECHAZADA,
+        TipoNotificacion.RETO_INASISTENCIA,
+        TipoNotificacion.RECORDATORIO_RETO,
         -> versusId?.let { navController.navigate(Screen.DetalleVersus.ruta(it)) }
 
         TipoNotificacion.COMPROMISO_RECIBIDO,

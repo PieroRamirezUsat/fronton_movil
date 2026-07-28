@@ -72,6 +72,12 @@ class FrontonMessagingService : FirebaseMessagingService() {
 
         val manager = getSystemService(NotificationManager::class.java)
         manager.notify(System.currentTimeMillis().toInt(), notificacion)
+
+        // Además de la notificación del sistema (para segundo plano/app
+        // cerrada), se alimenta el banner in-app — con la app abierta, antes
+        // de esto no había ninguna reacción visual hasta que el usuario
+        // entraba solo a la pestaña Notificaciones.
+        PushBannerHolder.mostrar(PushBannerHolder.Datos(titulo, mensaje, tipo, versusId, compromisoId))
     }
 
     override fun onDestroy() {

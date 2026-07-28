@@ -34,6 +34,7 @@ import com.example.aplicacion_fronton.model.dto.yaComenzoElVersus
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.DialogSelectorJugador
 import com.example.aplicacion_fronton.ui.componentes.TarjetaAlertaIncumplimiento
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -75,7 +76,7 @@ fun RegistrarCompromisoScreen(
     ) { padding ->
         when (val estado = carga) {
             is CargaCompromisoState.Cargando -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CargandoPelotita()
             }
             is CargaCompromisoState.Error -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(estado.mensaje, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)

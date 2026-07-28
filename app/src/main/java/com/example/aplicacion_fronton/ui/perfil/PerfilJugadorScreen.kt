@@ -47,6 +47,7 @@ import com.example.aplicacion_fronton.network.safeApiCall
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
 import com.example.aplicacion_fronton.ui.componentes.BotonVolver
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.TarjetaPartidoHistorial
 import com.example.aplicacion_fronton.ui.retos.PartidoHistorialUi
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -229,7 +230,7 @@ fun PerfilJugadorScreen(
 
                 when {
                     cargandoCumplimiento -> Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                        CargandoPelotita()
                     }
                     errorCumplimiento != null -> Text(errorCumplimiento.orEmpty(), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     cumplimiento != null -> TarjetaCumplimientoJugador(cumplimiento!!)
@@ -239,7 +240,7 @@ fun PerfilJugadorScreen(
                 Text("ÚLTIMOS RETOS", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
                 when {
                     cargandoVersus -> Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                        CargandoPelotita()
                     }
                     ultimosVersus.isEmpty() -> EstadoVacioVersus("Aún no hay partidos registrados para mostrar aquí.")
                     else -> {

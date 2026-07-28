@@ -58,6 +58,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.ConfettiOverlay
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import kotlinx.coroutines.delay
@@ -88,7 +89,7 @@ fun DueloRetoScreen(
 
     when (val actual = estado) {
         is DueloState.Cargando -> Box(Modifier.fillMaxSize().background(Color.Black).safeDrawingPadding(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = Color.White)
+            CargandoPelotita(color = Color.White)
         }
         is DueloState.Error -> Box(Modifier.fillMaxSize().background(Color.Black).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

@@ -1,6 +1,7 @@
 package com.example.aplicacion_fronton.ui.navigation
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -10,11 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import com.example.aplicacion_fronton.model.dto.NotificacionDto
 import com.example.aplicacion_fronton.model.dto.RankingEntryDto
+import com.example.aplicacion_fronton.network.PushBannerHolder
+import com.example.aplicacion_fronton.ui.componentes.BannerNotificacionFlotante
 import com.example.aplicacion_fronton.ui.compromisos.HistorialCompromisosScreen
 import com.example.aplicacion_fronton.ui.home.HomeScreen
 import com.example.aplicacion_fronton.ui.notificaciones.NotificacionesScreen
@@ -41,6 +45,7 @@ fun TabsShellScreen(
     onVersusSeleccionado: (Int) -> Unit,
     onRetar: () -> Unit,
     onSubidaRanking: (posicionAnterior: Int, posicionNueva: Int) -> Unit,
+    onSubidaDivision: (divisionAnterior: String, divisionNueva: String) -> Unit,
     onJugadorSeleccionado: (RankingEntryDto, String) -> Unit,
     onVerDetalleReto: (Int) -> Unit,
     onSesionCerrada: () -> Unit,
@@ -55,6 +60,7 @@ fun TabsShellScreen(
     onVerReporte: () -> Unit,
     onBuscarRivalesApuestas: () -> Unit,
     onBuscarVersus: () -> Unit,
+    onAbrirBanner: (PushBannerHolder.Datos) -> Unit,
 ) {
     val paginas = ItemBarraInferior.entries
     val pagerState = rememberPagerState(initialPage = ItemBarraInferior.INICIO.ordinal) { paginas.size }
@@ -84,6 +90,7 @@ fun TabsShellScreen(
         scope.launch { pagerState.animateScrollToPage(item.ordinal) }
     }
 
+    Box(Modifier.fillMaxSize()) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -105,6 +112,7 @@ fun TabsShellScreen(
                     onVersusSeleccionado = onVersusSeleccionado,
                     onRetar = onRetar,
                     onSubidaRanking = onSubidaRanking,
+                    onSubidaDivision = onSubidaDivision,
                     paddingInterno = paddingInterno,
                 )
                 ItemBarraInferior.RANKING -> RankingScreen(
@@ -148,5 +156,10 @@ fun TabsShellScreen(
                 )
             }
         }
+    }
+    BannerNotificacionFlotante(
+        onAbrir = onAbrirBanner,
+        modifier = Modifier.align(Alignment.TopCenter),
+    )
     }
 }

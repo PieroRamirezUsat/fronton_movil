@@ -71,6 +71,7 @@ fun HomeScreen(
     onVersusSeleccionado: (Int) -> Unit = {},
     onRetar: () -> Unit = {},
     onSubidaRanking: (posicionAnterior: Int, posicionNueva: Int) -> Unit = { _, _ -> },
+    onSubidaDivision: (divisionAnterior: String, divisionNueva: String) -> Unit = { _, _ -> },
     paddingInterno: PaddingValues,
     viewModel: HomeViewModel = viewModel(),
 ) {
@@ -99,13 +100,22 @@ fun HomeScreen(
         PushTokenRegistrar.registrarTokenActual()
     }
 
-    // Se dispara una sola vez por detección: `cargarPerfil()` ya actualiza el
-    // store con la posición actual en la misma pasada que arma el estado, así
-    // que la próxima carga (por ejemplo al volver de la propia pantalla de
-    // celebración) ya no vuelve a detectar la misma subida.
-    LaunchedEffect((estado as? HomeState.Exito)?.subidaRankingDetectada) {
-        val subida = (estado as? HomeState.Exito)?.subidaRankingDetectada
-        if (subida != null) onSubidaRanking(subida.first, subida.second)
+    // Se dispara una sola vez por detección: `cargarPerfil()` ya actualiza los
+    // stores (posición y división) con el valor actual en la misma pasada que
+    // arma el estado, así que la próxima carga (por ejemplo al volver de la
+    // propia pantalla de celebración) ya no vuelve a detectar la misma subida.
+    // Si un mismo partido dispara AMBAS a la vez (sube de posición Y cruza de
+    // división), se prioriza división — es el logro mayor — y se suprime la
+    // celebración de posición ese ciclo, para no encadenar dos pantallas de
+    // celebración por el mismo resultado.
+    val subidaDivision = (estado as? HomeState.Exito)?.subidaDivisionDetectada
+    val subidaRanking = (estado as? HomeState.Exito)?.subidaRankingDetectada
+    LaunchedEffect(subidaDivision, subidaRanking) {
+        if (subidaDivision != null) {
+            onSubidaDivision(subidaDivision.first, subidaDivision.second)
+        } else if (subidaRanking != null) {
+            onSubidaRanking(subidaRanking.first, subidaRanking.second)
+        }
     }
 
     when (val actual = estado) {

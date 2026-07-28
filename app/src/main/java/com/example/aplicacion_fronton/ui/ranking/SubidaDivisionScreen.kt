@@ -1,5 +1,6 @@
-package com.example.aplicacion_fronton.ui.compromisos
+package com.example.aplicacion_fronton.ui.ranking
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -9,15 +10,18 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Paid
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.MilitaryTech
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,69 +39,46 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
-import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.ConfettiOverlay
 import com.example.aplicacion_fronton.ui.componentes.ResplandorRadial
+import com.example.aplicacion_fronton.ui.componentes.colorDivision
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-/** Celebración a pantalla completa al ganar una apuesta — mismo esqueleto de
- * coreografía que `DueloRetoScreen`/`VictoriaPartidoScreen`, con identidad
- * terracota/tertiary (misma que ya usa Apuestas en el resto de la app) y la
- * descripción de lo apostado como protagonista, mismo estilo "entre comillas
- * en cursiva" ya usado en el Reporte de Apuestas. */
+/** Celebración a pantalla completa al ascender de división de Elo (Hierro →
+ * Bronce, etc.) — mismo esqueleto de coreografía que `SubidaRankingScreen`
+ * (fade + rebote + confeti + transición animada del valor protagonista), pero
+ * puramente local: a diferencia de esa pantalla, acá no hace falta pedir el
+ * perfil por red (nombre/foto) — la división nueva ya la trae `HomeViewModel`
+ * de la misma comparación que dispara esta pantalla, así que es un Composable
+ * sin ViewModel propio. El color de fondo es el de la división NUEVA
+ * (`colorDivision`, compartido con `RankingScreen`), y el confeti mezcla los
+ * colores de la división vieja y la nueva para que se sienta como una
+ * transición, no solo un cambio de marca. */
 @Composable
-fun VictoriaApuestaScreen(
-    compromisoId: Int,
-    onVerDetalle: () -> Unit,
-    onIrAHome: () -> Unit,
-    viewModel: VictoriaApuestaViewModel = viewModel(),
-) {
-    val estado by viewModel.estado.collectAsStateWithLifecycle()
-    LaunchedEffect(compromisoId) { viewModel.cargar(compromisoId) }
-
-    when (val actual = estado) {
-        is VictoriaApuestaState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary).safeDrawingPadding(), contentAlignment = Alignment.Center) {
-            CargandoPelotita(color = Color.White)
-        }
-        is VictoriaApuestaState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(actual.mensaje, color = Color.White, textAlign = TextAlign.Center)
-                Spacer(Modifier.height(16.dp))
-                TextButton(onClick = onIrAHome) { Text("CONTINUAR", color = Color.White) }
-            }
-        }
-        is VictoriaApuestaState.Exito -> ContenidoVictoriaApuesta(
-            datos = actual.datos,
-            onVerDetalle = onVerDetalle,
-            onIrAHome = onIrAHome,
-        )
-    }
-}
-
-@Composable
-private fun ContenidoVictoriaApuesta(
-    datos: VictoriaApuestaUi,
-    onVerDetalle: () -> Unit,
+fun SubidaDivisionScreen(
+    divisionAnterior: String,
+    divisionNueva: String,
+    onVerRanking: () -> Unit,
     onIrAHome: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
+    val colorNueva = colorDivision(divisionNueva)
+    val colorAnterior = colorDivision(divisionAnterior)
 
     val alfaFondo = remember { Animatable(0f) }
     val offsetIconoY = remember { Animatable(-140f) }
     val offsetTituloY = remember { Animatable(80f) }
     var mostrarParticulas by remember { mutableStateOf(false) }
-    var mostrarDescripcion by remember { mutableStateOf(false) }
+    var divisionMostrada by remember { mutableStateOf(divisionAnterior) }
     var mostrarAcciones by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -106,14 +87,13 @@ private fun ContenidoVictoriaApuesta(
             offsetIconoY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
         }
 
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-        mostrarParticulas = true
-
         delay(200)
         offsetTituloY.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium))
 
-        delay(400)
-        mostrarDescripcion = true
+        delay(300)
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        mostrarParticulas = true
+        divisionMostrada = divisionNueva
 
         delay(800)
         mostrarAcciones = true
@@ -123,14 +103,14 @@ private fun ContenidoVictoriaApuesta(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer { alpha = alfaFondo.value }
-            .background(MaterialTheme.colorScheme.tertiary)
+            .background(Color(0xFF14171C))
             .safeDrawingPadding(),
     ) {
         if (mostrarParticulas) {
             ConfettiOverlay(
                 disparar = true,
                 modifier = Modifier.align(Alignment.Center),
-                colores = listOf(Color(0xFFFEC564), Color.White, MaterialTheme.colorScheme.tertiaryContainer),
+                colores = listOf(colorNueva, colorAnterior, Color.White),
             )
         }
 
@@ -140,52 +120,71 @@ private fun ContenidoVictoriaApuesta(
             verticalArrangement = Arrangement.Center,
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.offset { IntOffset(0, offsetIconoY.value.roundToInt()) }) {
-                ResplandorRadial(color = Color(0xFFFEC564), tamaño = 220.dp, alpha = 0.4f)
+                ResplandorRadial(color = colorNueva, tamaño = 220.dp, alpha = 0.5f)
                 Box(
                     modifier = Modifier
                         .size(96.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFEC564)),
+                        .background(colorNueva.copy(alpha = 0.18f))
+                        .border(3.dp, colorNueva, CircleShape),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Filled.Paid, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(48.dp))
+                    Icon(Icons.Filled.MilitaryTech, contentDescription = null, tint = colorNueva, modifier = Modifier.size(52.dp))
                 }
             }
 
             Spacer(Modifier.height(28.dp))
 
             Text(
-                "¡GANASTE LA APUESTA!",
+                "¡SUBISTE DE DIVISIÓN!",
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.offset { IntOffset(0, offsetTituloY.value.roundToInt()) },
             )
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(4.dp))
             Text(
-                "vs. ${datos.rivalNombre}".uppercase(),
+                "TU ELO YA TE PUSO EN OTRO NIVEL",
                 style = CapsLabelTextStyle,
-                color = Color.White.copy(alpha = 0.8f),
+                color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.offset { IntOffset(0, offsetTituloY.value.roundToInt()) },
             )
 
+            Spacer(Modifier.height(28.dp))
+
+            AnimatedContent(
+                targetState = divisionMostrada,
+                transitionSpec = {
+                    (fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 3 }) togetherWith
+                        (fadeOut(tween(200)) + slideOutVertically(tween(200)) { -it / 3 })
+                },
+                label = "division",
+            ) { division ->
+                Text(
+                    division.uppercase(),
+                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = 44.sp, fontWeight = FontWeight.Black),
+                    color = colorDivision(division),
+                )
+            }
+
             AnimatedVisibility(
-                visible = mostrarDescripcion,
+                visible = mostrarParticulas,
                 enter = fadeIn(tween(300)) + expandVertically(tween(300)),
             ) {
-                Text(
-                    "\"${datos.descripcion}\"",
-                    style = MaterialTheme.typography.titleLarge.copy(fontStyle = FontStyle.Italic),
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(top = 24.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.Black.copy(alpha = 0.15f))
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                )
+                        .padding(top = 16.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.White.copy(alpha = 0.08f))
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                ) {
+                    Text(divisionAnterior.uppercase(), style = CapsLabelTextStyle.copy(fontSize = 11.sp), color = Color.White.copy(alpha = 0.5f))
+                    Text(" → ", style = CapsLabelTextStyle.copy(fontSize = 11.sp), color = Color.White.copy(alpha = 0.5f))
+                    Text(divisionNueva.uppercase(), style = CapsLabelTextStyle.copy(fontSize = 11.sp), color = colorNueva, fontWeight = FontWeight.Bold)
+                }
             }
         }
 
@@ -197,12 +196,12 @@ private fun ContenidoVictoriaApuesta(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 BotonTactil(
-                    texto = "Ver detalle",
-                    icono = Icons.Filled.Visibility,
+                    texto = "Ver ranking",
+                    icono = Icons.Filled.Leaderboard,
                     saltoElastico = true,
-                    onClick = onVerDetalle,
-                    colorContenedor = Color(0xFFFEC564),
-                    colorTexto = MaterialTheme.colorScheme.tertiary,
+                    onClick = onVerRanking,
+                    colorContenedor = colorNueva,
+                    colorTexto = Color(0xFF14171C),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(12.dp))
@@ -210,7 +209,7 @@ private fun ContenidoVictoriaApuesta(
                     onClick = onIrAHome,
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(Color.Black.copy(alpha = 0.15f)),
+                        .background(Color.White.copy(alpha = 0.1f)),
                 ) {
                     Icon(Icons.Filled.Home, contentDescription = null, tint = Color.White.copy(alpha = 0.95f), modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))

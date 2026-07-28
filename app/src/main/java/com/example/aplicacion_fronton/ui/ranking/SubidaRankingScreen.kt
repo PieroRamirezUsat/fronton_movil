@@ -57,6 +57,7 @@ import com.example.aplicacion_fronton.network.RetrofitClient
 import com.example.aplicacion_fronton.network.safeApiCall
 import com.example.aplicacion_fronton.network.urlCompletaFoto
 import com.example.aplicacion_fronton.ui.componentes.BotonTactil
+import com.example.aplicacion_fronton.ui.componentes.CargandoPelotita
 import com.example.aplicacion_fronton.ui.componentes.ConfettiOverlay
 import com.example.aplicacion_fronton.ui.componentes.ResplandorRadial
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
@@ -107,7 +108,7 @@ fun SubidaRankingScreen(
 
     when (val actual = estado) {
         is SubidaRankingState.Cargando -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer).safeDrawingPadding(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondaryContainer)
+            CargandoPelotita(color = MaterialTheme.colorScheme.onSecondaryContainer)
         }
         is SubidaRankingState.Error -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondaryContainer).safeDrawingPadding().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

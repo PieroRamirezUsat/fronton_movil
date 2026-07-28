@@ -46,10 +46,16 @@ sealed class Screen(val route: String) {
     data object VictoriaPartido : Screen("victoria_partido/{versusId}/{eloAntes}/{eloDespues}") {
         fun ruta(versusId: Int, eloAntes: Int, eloDespues: Int) = "victoria_partido/$versusId/$eloAntes/$eloDespues"
     }
+    data object DerrotaPartido : Screen("derrota_partido/{versusId}/{eloAntes}/{eloDespues}") {
+        fun ruta(versusId: Int, eloAntes: Int, eloDespues: Int) = "derrota_partido/$versusId/$eloAntes/$eloDespues"
+    }
     data object VictoriaApuesta : Screen("victoria_apuesta/{compromisoId}") {
         fun ruta(compromisoId: Int) = "victoria_apuesta/$compromisoId"
     }
     data object SubidaRanking : Screen("subida_ranking/{posicionAnterior}/{posicionNueva}") {
         fun ruta(posicionAnterior: Int, posicionNueva: Int) = "subida_ranking/$posicionAnterior/$posicionNueva"
+    }
+    data object SubidaDivision : Screen("subida_division/{divisionAnterior}/{divisionNueva}") {
+        fun ruta(divisionAnterior: String, divisionNueva: String) = "subida_division/$divisionAnterior/$divisionNueva"
     }
 }

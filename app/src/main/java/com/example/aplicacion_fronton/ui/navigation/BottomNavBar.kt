@@ -1,6 +1,9 @@
 package com.example.aplicacion_fronton.ui.navigation
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -158,7 +161,18 @@ private fun ItemBarra(
                 BadgedBox(
                     badge = {
                         if (contador > 0) {
-                            Badge(containerColor = MaterialTheme.colorScheme.error) {
+                            // "Pop" al aparecer o cambiar de número — antes el
+                            // badge solo cambiaba de golpe, sin ningún aviso de
+                            // que hay una novedad nueva.
+                            val escalaPop = remember { Animatable(1.6f) }
+                            LaunchedEffect(contador) {
+                                escalaPop.snapTo(1.6f)
+                                escalaPop.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium))
+                            }
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.scale(escalaPop.value),
+                            ) {
                                 Text(if (contador > 9) "9+" else contador.toString())
                             }
                         }
