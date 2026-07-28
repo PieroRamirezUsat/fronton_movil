@@ -72,4 +72,5 @@ object RetrofitClient {
     val usuariosService: UsuariosService by lazy { retrofit.create(UsuariosService::class.java) }
     val prediccionesService: PrediccionesService by lazy { retrofit.create(PrediccionesService::class.java) }
     val notificacionesService: NotificacionesService by lazy { retrofit.create(NotificacionesService::class.java) }
+    val denunciasService: DenunciasService by lazy { retrofit.create(DenunciasService::class.java) }
 }

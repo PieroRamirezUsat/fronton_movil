@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EventBusy
+import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material.icons.filled.Stadium
@@ -23,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.aplicacion_fronton.model.dto.CategoriaEdad
 import com.example.aplicacion_fronton.model.dto.CumplimientoDto
+import com.example.aplicacion_fronton.model.dto.DenunciaCreateRequest
 import com.example.aplicacion_fronton.model.dto.NivelCumplimiento
 import com.example.aplicacion_fronton.model.dto.rivalIdPara
 import com.example.aplicacion_fronton.model.dto.soyEquipoJugador1
@@ -52,6 +55,7 @@ import com.example.aplicacion_fronton.ui.componentes.TarjetaPartidoHistorial
 import com.example.aplicacion_fronton.ui.retos.PartidoHistorialUi
 import com.example.aplicacion_fronton.ui.theme.CapsLabelTextStyle
 import com.example.aplicacion_fronton.ui.theme.NumericTextStyle
+import kotlinx.coroutines.launch
 
 private val etiquetasCategoriaJugador = mapOf(
     CategoriaEdad.MENORES to "Menores",
@@ -82,6 +86,13 @@ fun PerfilJugadorScreen(
     var ultimosVersus by remember { mutableStateOf<List<PartidoHistorialUi>>(emptyList()) }
     var cargandoVersus by remember { mutableStateOf(true) }
     var visible by remember { mutableStateOf(false) }
+
+    var mostrarDenuncia by remember { mutableStateOf(false) }
+    var motivoDenuncia by remember { mutableStateOf("") }
+    var enviandoDenuncia by remember { mutableStateOf(false) }
+    var denunciaEnviada by remember { mutableStateOf(false) }
+    var errorDenuncia by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) { visible = true }
 
@@ -141,7 +152,13 @@ fun PerfilJugadorScreen(
                         "PERFIL DEL JUGADOR",
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
                     )
+                    if (!denunciaEnviada) {
+                        IconButton(onClick = { mostrarDenuncia = true }) {
+                            Icon(Icons.Filled.Flag, contentDescription = "Reportar jugador", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceContainerHighest, thickness = 2.dp)
             }
@@ -280,6 +297,63 @@ fun PerfilJugadorScreen(
                 )
             }
         }
+    }
+
+    if (mostrarDenuncia) {
+        AlertDialog(
+            onDismissRequest = { if (!enviandoDenuncia) mostrarDenuncia = false },
+            title = { Text("Reportar a ${datos.nombre}") },
+            text = {
+                Column {
+                    Text(
+                        "Contanos qué pasó — un admin lo va a revisar.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    OutlinedTextField(
+                        value = motivoDenuncia,
+                        onValueChange = { motivoDenuncia = it },
+                        placeholder = { Text("Ej: no se presentó al partido acordado") },
+                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                        minLines = 2,
+                    )
+                    if (errorDenuncia != null) {
+                        Text(errorDenuncia.orEmpty(), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !enviandoDenuncia,
+                    onClick = {
+                        if (motivoDenuncia.trim().length < 3) {
+                            errorDenuncia = "Contanos un poco más (mínimo 3 caracteres)."
+                            return@TextButton
+                        }
+                        scope.launch {
+                            enviandoDenuncia = true
+                            errorDenuncia = null
+                            val resultado = safeApiCall {
+                                RetrofitClient.denunciasService.crearDenuncia(
+                                    DenunciaCreateRequest(objetivo_tipo = "usuario", objetivo_id = datos.usuarioId, motivo = motivoDenuncia.trim()),
+                                )
+                            }
+                            enviandoDenuncia = false
+                            when (resultado) {
+                                is ApiResult.Exito -> {
+                                    denunciaEnviada = true
+                                    mostrarDenuncia = false
+                                }
+                                is ApiResult.Error -> errorDenuncia = resultado.mensaje
+                            }
+                        }
+                    },
+                ) { Text(if (enviandoDenuncia) "Enviando…" else "Denunciar", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarDenuncia = false }, enabled = !enviandoDenuncia) { Text("Cancelar") }
+            },
+        )
     }
 }
 
