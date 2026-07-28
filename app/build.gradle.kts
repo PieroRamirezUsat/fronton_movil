@@ -24,8 +24,8 @@ android {
         applicationId = "com.example.aplicacion_fronton"
         minSdk = 24
         targetSdk = 36
-        versionCode = 7
-        versionName = "2.5"
+        versionCode = 8
+        versionName = "2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -65,7 +65,12 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://127.0.0.1:8001/\"")
         }
         release {
-            isMinifyEnabled = false
+            // Apagado desde el proyecto inicial sin motivo real — con las reglas
+            // de ProGuard ya agregadas (Gson/DTOs, Retrofit, OkHttp) esto reduce
+            // bastante el tamaño del APK final quitando código no usado de
+            // Compose/Play Services/Maps/Firebase y ofuscando lo que queda.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
