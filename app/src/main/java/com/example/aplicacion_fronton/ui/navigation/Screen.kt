@@ -4,6 +4,7 @@ import android.net.Uri
 
 sealed class Screen(val route: String) {
     data object Splash : Screen("splash")
+    data object Onboarding : Screen("onboarding")
     data object Login : Screen("login")
     data object Registro : Screen("registro")
     data object OlvideContrasena : Screen("olvide_contrasena")

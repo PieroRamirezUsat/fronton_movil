@@ -51,6 +51,7 @@ import com.example.aplicacion_fronton.ui.retos.ReportarMarcadorScreen
 import com.example.aplicacion_fronton.ui.retos.RetoHolder
 import com.example.aplicacion_fronton.ui.retos.DerrotaPartidoScreen
 import com.example.aplicacion_fronton.ui.retos.VictoriaPartidoScreen
+import com.example.aplicacion_fronton.ui.onboarding.OnboardingScreen
 import com.example.aplicacion_fronton.ui.splash.SplashScreen
 import kotlinx.coroutines.launch
 
@@ -101,10 +102,24 @@ fun AppNavigation() {
             SplashScreen(
                 onTerminado = {
                     scope.launch {
-                        val destino = if (RetrofitClient.tokenStore.haySesionActiva()) destinoTrasIniciarSesion() else Screen.Login.route
+                        val destino = when {
+                            RetrofitClient.tokenStore.haySesionActiva() -> destinoTrasIniciarSesion()
+                            !RetrofitClient.onboardingStore.yaVisto() -> Screen.Onboarding.route
+                            else -> Screen.Login.route
+                        }
                         navController.navigate(destino) {
                             popUpTo(Screen.Splash.route) { inclusive = true }
                         }
+                    }
+                },
+            )
+        }
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onTerminado = {
+                    RetrofitClient.onboardingStore.marcarVisto()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
                     }
                 },
             )
